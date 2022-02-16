@@ -6,6 +6,7 @@ coverage
 coverage.json
 typechain
 
+bin
 #Hardhat files
 cache
 artifacts
