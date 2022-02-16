@@ -10,12 +10,15 @@ $ git clone https://github.com/growr-xyz/growr-core-protocol.git
 $ cd ./growr-core-protocol
 $ npm install
 ```
-Run sanity check
-```
-$ npm run test
-```
-Spin up a local node and deploy contracts
+Spin up a local node
 ```
 $ npm run node:local
-$ npm run deploy:local
+```
+Useful scripts
+```
+Deploy xUSD Token and distribute X amount to all wallets
+$ npm run script:dev:xUSD
+
+Execute custom script
+$ npm run script:dev <path to the script file>
 ```
