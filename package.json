@@ -5,7 +5,6 @@
   "main": "hardhat.config.js",
   "scripts": {
     "node:local": "npx hardhat node",
-    "deploy:local": "npx hardhat run --network localhost scripts/sample-script.js",
     "script:dev": "npx hardhat run --network localhost",
     "script:dev:xUSD": "npx hardhat run --network localhost scripts/dev/create-and-distribute-xUSD.js",
     "test": "npx hardhat test"

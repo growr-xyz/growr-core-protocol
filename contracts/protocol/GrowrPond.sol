@@ -182,6 +182,7 @@ contract GrowrPond {
     function borrow(uint256 _amount) public {
         // TODO:
         // require(CreditRating(msg.sender).rating() > pond.minCreditRating, "You are not eligible to get loans");
+        
         require(
             _amount >= pond.minLoanSize && _amount <= pond.maxLoanSize,
             "Loan amount out of range"
