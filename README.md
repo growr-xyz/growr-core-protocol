@@ -19,6 +19,9 @@ Useful scripts
 Deploy xUSD Token and distribute X amount to all wallets
 $ npm run script:dev:xUSD
 
+Deploy contracts
+$ npm run script:dev:deploy
+
 Execute custom script
 $ npm run script:dev <path to the script file>
 ```
