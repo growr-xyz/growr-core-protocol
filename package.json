@@ -6,7 +6,7 @@
 	"scripts": {
 		"node:local": "npx hardhat node",
 		"script:dev": "npx hardhat run --network localhost",
-		"script:dev:deploy": "npx hardhat run --network localhost scripts/deploy/deploy-pond.js",
+		"script:dev:deploy": "npx hardhat run --network localhost scripts/deploy/PondFactory.js",
 		"script:dev:xUSD": "npx hardhat run --network localhost scripts/dev/create-and-distribute-xUSD.js",
 		"test": "npx hardhat test"
 	},
@@ -23,6 +23,7 @@
 	"homepage": "https://github.com/growr-xyz/growr-core-protocol#readme",
 	"devDependencies": {
 		"@nomiclabs/hardhat-ethers": "^2.0.5",
+		"@nomiclabs/hardhat-ganache": "^2.0.1",
 		"@nomiclabs/hardhat-waffle": "^2.0.2",
 		"@openzeppelin/contracts": "^4.5.0",
 		"chai": "^4.3.6",

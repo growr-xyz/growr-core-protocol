@@ -14,6 +14,12 @@ Spin up a local node
 ```
 $ npm run node:local
 ```
+
+Run sanity check
+```
+$ npm run test
+```
+
 Useful scripts
 ```
 Deploy xUSD Token and distribute X amount to all wallets
