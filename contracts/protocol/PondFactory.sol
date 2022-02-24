@@ -12,11 +12,13 @@ contract PondFactory {
     // stores created Ponds by user
     mapping(address => Pond[]) public getPonds;
 
+    event PondCreated(address addr, address owner, uint256 timestamp);
+
     constructor() {}
 
     function createPond(
-        PondTypes.PondParams memory _params,
-        PondTypes.PondCriteria memory _criteria
+        PondTypes.Params memory _params,
+        PondTypes.Criteria memory _criteria
     ) external {
         require(bytes(_params.name).length > 0, "Growr. - Invalid pond name");
         require(
@@ -44,6 +46,8 @@ contract PondFactory {
         getPonds[msg.sender].push(pond);
 
         pond.transferOwnership(msg.sender);
+
+        emit PondCreated(address(pond), msg.sender, block.timestamp);
     }
 
     function getUserPonds(address user) external view returns (Pond[] memory) {

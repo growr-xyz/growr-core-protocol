@@ -10,15 +10,15 @@ import "./Pond.sol";
 import "../libraries/types/PondTypes.sol";
 
 contract Pond is Ownable {
-    PondTypes.PondParams private params;
-    PondTypes.PondCriteria private criteria;
+    PondTypes.Params private params;
+    PondTypes.Criteria private criteria;
 
     uint256 public totalDeposited;
     uint256 public totalUtilized;
 
     constructor(
-        PondTypes.PondParams memory _params,
-        PondTypes.PondCriteria memory _criteria
+        PondTypes.Params memory _params,
+        PondTypes.Criteria memory _criteria
     ) {
         params = _params;
         criteria = _criteria;
@@ -28,8 +28,8 @@ contract Pond is Ownable {
         public
         view
         returns (
-            PondTypes.PondParams memory _params,
-            PondTypes.PondCriteria memory _criteria,
+            PondTypes.Params memory _params,
+            PondTypes.Criteria memory _criteria,
             uint256 _totalDeposited,
             uint256 _totalUtilized
         )

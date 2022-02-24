@@ -50,7 +50,7 @@ describe("Testing contract PondFactory", function () {
 				..._criteria,
 			};
 
-			await factory.createPond(
+			return await factory.createPond(
 				{
 					name: _params.name,
 					token: xUSD.address,
@@ -67,7 +67,7 @@ describe("Testing contract PondFactory", function () {
 		};
 
 		it("Positive case - Should create a pond", async () => {
-			await _createPond({}, {});
+			expect(await _createPond({}, {})).to.emit(factory, "PondCreated");
 
 			const userPonds = await factory.getUserPonds(signer0.address);
 
