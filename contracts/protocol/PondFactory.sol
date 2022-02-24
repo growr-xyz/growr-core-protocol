@@ -10,11 +10,31 @@ import "../libraries/types/PondTypes.sol";
 
 contract PondFactory {
     // stores created Ponds by user
-    mapping(address => Pond[]) public getPonds;
+    mapping(address => Pond[]) public getUserPond;
+    Pond[] public getPond;
 
     event PondCreated(address addr, address owner, uint256 timestamp);
 
     constructor() {}
+
+    function getAllPondsLength() external view returns (uint256) {
+        return getPond.length;
+    }
+
+    function getUserPondsLength(address user) external view returns (uint256) {
+        return getUserPond[user].length;
+    }
+
+    // dev TODO: remove me
+    function getUserPonds(address user) external view returns (Pond[] memory) {
+        return getUserPond[user];
+    }
+
+    function getAllPonds() external view returns (Pond[] memory) {
+        return getPond;
+    }
+
+    // /dev
 
     function createPond(
         PondTypes.Params memory _params,
@@ -43,14 +63,11 @@ contract PondFactory {
 
         Pond pond = new Pond(_params, _criteria);
 
-        getPonds[msg.sender].push(pond);
+        getUserPond[msg.sender].push(pond);
+        getPond.push(pond);
 
         pond.transferOwnership(msg.sender);
 
         emit PondCreated(address(pond), msg.sender, block.timestamp);
-    }
-
-    function getUserPonds(address user) external view returns (Pond[] memory) {
-        return getPonds[user];
     }
 }
