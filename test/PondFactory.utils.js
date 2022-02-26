@@ -3,8 +3,8 @@ const { ethers } = require("hardhat");
 const defaultParams = {
 	name: "Pond 1",
 	token: null,
-	minLoanAmount: 100,
-	maxLoanAmount: 500,
+	minLoanAmount: ethers.utils.parseUnits("100", "ether"),
+	maxLoanAmount: ethers.utils.parseUnits("500", "ether"),
 	minLoanDuration: 1,
 	maxLoanDuration: 12,
 	annualInterestRate: 20,
@@ -15,11 +15,13 @@ const defaultCriteria = {
 	names: ["citizenship"],
 	types: ["string"],
 	contents: ["SV"],
-	operations: ["="],
+	operators: ["="],
 };
 
 module.exports = (factory, xUSD) => {
 	return {
+		defaultParams,
+		defaultCriteria,
 		createPond: async (_params, _criteria) => {
 			_params = {
 				...defaultParams,
@@ -35,13 +37,13 @@ module.exports = (factory, xUSD) => {
 				{
 					name: _params.name,
 					token: _params.token,
-					minLoanAmount: ethers.utils.parseUnits(_params.minLoanAmount.toString(), "ether"),
-					maxLoanAmount: ethers.utils.parseUnits(_params.maxLoanAmount.toString(), "ether"),
-					minLoanDuration: ethers.utils.parseUnits(_params.minLoanDuration.toString(), "ether"),
-					maxLoanDuration: ethers.utils.parseUnits(_params.maxLoanDuration.toString(), "ether"),
-					annualInterestRate: ethers.utils.parseUnits(_params.annualInterestRate.toString(), "ether"),
-					disbursmentFee: ethers.utils.parseUnits(_params.disbursmentFee.toString(), "ether"),
-					cashBackRate: ethers.utils.parseUnits(_params.cashBackRate.toString(), "ether"),
+					minLoanAmount: _params.minLoanAmount,
+					maxLoanAmount: _params.maxLoanAmount,
+					minLoanDuration: _params.minLoanDuration,
+					maxLoanDuration: _params.maxLoanDuration,
+					annualInterestRate: _params.annualInterestRate,
+					disbursmentFee: _params.disbursmentFee,
+					cashBackRate: _params.cashBackRate,
 				},
 				_criteria
 			);

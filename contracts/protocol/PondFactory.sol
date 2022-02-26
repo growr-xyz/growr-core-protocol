@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 import "./Pond.sol";
 
-import "../libraries/types/PondTypes.sol";
+import "../libraries/types/Types.sol";
 
 contract PondFactory {
     // stores created Ponds by user
@@ -37,8 +37,8 @@ contract PondFactory {
     // /dev
 
     function createPond(
-        PondTypes.Params memory _params,
-        PondTypes.Criteria memory _criteria
+        Types.PondParams memory _params,
+        Types.PondCriteriaInput memory _criteria
     ) external {
         require(bytes(_params.name).length > 0, "Growr. - Invalid pond name");
         require(
@@ -57,7 +57,7 @@ contract PondFactory {
             _criteria.names.length > 0 &&
                 _criteria.types.length == _criteria.names.length &&
                 _criteria.contents.length == _criteria.names.length &&
-                _criteria.operations.length == _criteria.names.length,
+                _criteria.operators.length == _criteria.names.length,
             "Growr. - Invalid pond criteria"
         );
 
