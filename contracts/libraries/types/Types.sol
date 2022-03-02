@@ -44,7 +44,26 @@ library Types {
         uint256 disbursmentFee;
         uint256 cashBackRate;
         uint256 interestAmount;
-        uint256 repayAmount;
+        uint256 totalAmount;
         uint256 installmentAmount;
+    }
+
+    struct LoanParams {
+        ERC20 token;
+        uint256 amount;
+        uint256 duration;
+        uint256 annualInterestRate;
+        uint256 disbursmentFee;
+        uint256 cashBackRate;
+    }
+
+    struct LoanReceipt {
+        uint256 totalAmount;
+        uint256 interestAmount;
+        uint256 repaidTotalAmount;
+        uint256 repaidInterestAmount;
+        uint256 installmentAmount;
+        uint256 nextInstallmentDate;
+        uint256 nextInstallmentAmount;
     }
 }

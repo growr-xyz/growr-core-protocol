@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "hardhat/console.sol";
 
 import "./Pond.sol";
+import "./Loan.sol";
 import "./CredentialVerifier.sol";
 import "../libraries/types/Types.sol";
 
@@ -16,7 +17,8 @@ contract Pond is Ownable, CredentialVerifier {
 
     Types.PondParams private params;
 
-    mapping(address => uint256) public getDepositorBalance;
+    mapping(address => uint256) public getLenderBalance;
+    mapping(address => Loan) public getLoan;
 
     uint256 public totalDeposited;
     uint256 public totalUtilized;
@@ -100,11 +102,13 @@ contract Pond is Ownable, CredentialVerifier {
 
         if (eligible) {
             _loan.approved = true;
-            _loan.interestAmount = amount.add(
-                amount.mul(params.annualInterestRate).mul(duration).div(12)
-            );
-            _loan.repayAmount = amount.add(_loan.interestAmount);
-            _loan.installmentAmount = _loan.repayAmount.div(duration);
+            _loan.interestAmount = amount
+                .mul(params.annualInterestRate)
+                .mul(duration)
+                .div(100)
+                .div(12);
+            _loan.totalAmount = amount.add(_loan.interestAmount);
+            _loan.installmentAmount = _loan.totalAmount.div(duration);
         }
 
         return _loan;
@@ -112,10 +116,69 @@ contract Pond is Ownable, CredentialVerifier {
 
     function deposit(uint256 amount) external notClosed {
         totalDeposited = totalDeposited.add(amount);
-        getDepositorBalance[msg.sender] = getDepositorBalance[msg.sender].add(
-            amount
-        );
+        getLenderBalance[msg.sender] = getLenderBalance[msg.sender].add(amount);
 
         params.token.transferFrom(msg.sender, address(this), amount);
+    }
+
+    function borrow(uint256 _amount, uint256 _duration) public {
+        require(
+            _amount >= params.minLoanAmount,
+            "Growr.- Amount is less than min loan amount"
+        );
+        require(
+            _amount <= params.maxLoanAmount,
+            "Growr. - Amount exceeds max loan amount"
+        );
+        require(
+            _amount <= getAvailableBalance(),
+            "Growr. - Not enough funds to borrow"
+        );
+        require(
+            _duration >= params.minLoanDuration,
+            "Growr. - Duration is less than min loan duration"
+        );
+        require(
+            _duration <= params.maxLoanDuration,
+            "Growr. - Duration exceeds max loan duration"
+        );
+
+        // Get personal credentials and verify them with the pond criteria
+        // Types.PersonalCredentialsInput memory _credentials = PersonalCredentials(msg.sender);
+        bool eligible = true; //verifyCredentials(_credentials);
+
+        require(eligible, "Growr. - Eligibility verificaiton failed");
+
+        totalUtilized.add(_amount);
+
+        getLoan[msg.sender] = new Loan(
+            params.token,
+            _amount,
+            _duration,
+            params.annualInterestRate,
+            params.disbursmentFee,
+            params.cashBackRate
+        );
+
+        params.token.transfer(msg.sender, _amount);
+    }
+
+    function repay(uint256 _amount, address _loan) external {
+        Loan loan = getLoan[msg.sender];
+
+        require(address(loan) == _loan, "Growr. - Loan does not exists");
+
+        // uint interestAmount = loan.interestAmount();
+        // uint256 remainingInterest = interestAmount.sub(
+        //     loan.repaidInterestAmount()
+        // );
+        // console.log(interestAmount, loan.repaidInterestAmount());
+        // uint256 remainingPrincipal = _amount.sub(remainingInterest);
+
+        // totalUtilized = totalUtilized.sub(remainingPrincipal);
+
+        loan.repay(_amount);
+
+        params.token.transferFrom(msg.sender, address(this), _amount);
     }
 }

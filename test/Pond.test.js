@@ -44,7 +44,7 @@ describe("Testing contract Pond", function () {
 		await pond.connect(signer0).deposit(ethers.utils.parseUnits("500", "ether"));
 	});
 
-	describe("Getting a loan offer", () => {
+	describe.skip("Getting a loan offer", () => {
 		// it("Positive case - Get pond details", async () => {
 		// 	const details = await pond.getDetails();
 
@@ -102,6 +102,63 @@ describe("Testing contract Pond", function () {
 			await expect(pond.getLoanOffer(amount, 10, { names: [], contents: ["SV"] })).to.be.revertedWith(
 				"Growr. - Invalid personal credentials"
 			);
+		});
+	});
+
+	describe("Get a real loan", async () => {
+		it.skip("Positive case - Get a loan", async () => {
+			const amount = ethers.utils.parseUnits("150", "ether");
+			const duration = 5;
+
+			const LoanContract = await ethers.getContractFactory("Loan");
+
+			const balanceBefore = await xUSD.balanceOf(signer0.address);
+
+			await pond.borrow(amount, duration);
+
+			const balanceAfter = await xUSD.balanceOf(signer0.address);
+
+			const loanAddress = await pond.getLoan(signer0.address);
+			const loan = LoanContract.attach(loanAddress);
+
+			const details = await loan.getDetails();
+
+			expect(balanceBefore).to.be.lt(balanceAfter);
+			expect(details._params.amount).to.equal(amount);
+			expect(details._params.duration.toNumber()).to.equal(duration);
+		});
+
+		it("Positive case - Repay more than installment amount", async () => {
+			const amount = ethers.utils.parseUnits("150", "ether");
+			const repayAmount = ethers.utils.parseUnits("50", "ether");
+
+			const duration = 5;
+
+			const LoanContract = await ethers.getContractFactory("Loan");
+
+			const balanceBefore = await xUSD.balanceOf(signer0.address);
+
+			await pond.borrow(amount, duration);
+
+			const balanceAfter = await xUSD.balanceOf(signer0.address);
+
+			const loanAddress = await pond.getLoan(signer0.address);
+			const loan = LoanContract.attach(loanAddress);
+
+			const detailsBefore = await loan.getDetails();
+
+			console.log(detailsBefore);
+
+			await xUSD.approve(pond.address, repayAmount);
+			await pond.repay(repayAmount, loanAddress);
+
+			const detailsAfter = await loan.getDetails();
+
+			console.log(detailsAfter);
+
+			expect(balanceBefore).to.be.lt(balanceAfter);
+			expect(detailsBefore._params.amount).to.equal(amount);
+			expect(detailsBefore._params.duration.toNumber()).to.equal(duration);
 		});
 	});
 });
