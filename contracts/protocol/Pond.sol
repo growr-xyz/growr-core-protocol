@@ -22,7 +22,7 @@ contract Pond is Ownable, CredentialVerifier {
 
     uint256 public totalDeposited;
     uint256 public totalUtilized;
-    uint256 public accruedInterest;
+    uint256 public totalInterest;
 
     bool public active;
 
@@ -42,7 +42,7 @@ contract Pond is Ownable, CredentialVerifier {
     function getAvailableBalance() private view returns (uint256) {
         return
             params.token.balanceOf(address(this)).sub(totalUtilized).sub(
-                accruedInterest
+                totalInterest
             );
     }
 
@@ -102,12 +102,12 @@ contract Pond is Ownable, CredentialVerifier {
 
         if (eligible) {
             _loan.approved = true;
-            _loan.interestAmount = amount
+            _loan.totalInterestAmount = amount
                 .mul(params.annualInterestRate)
                 .mul(duration)
                 .div(100)
                 .div(12);
-            _loan.totalAmount = amount.add(_loan.interestAmount);
+            _loan.totalAmount = amount.add(_loan.totalInterestAmount);
             _loan.installmentAmount = _loan.totalAmount.div(duration);
         }
 
@@ -149,7 +149,7 @@ contract Pond is Ownable, CredentialVerifier {
 
         require(eligible, "Growr. - Eligibility verificaiton failed");
 
-        totalUtilized.add(_amount);
+        totalUtilized = totalUtilized.add(_amount);
 
         getLoan[msg.sender] = new Loan(
             params.token,
@@ -168,17 +168,12 @@ contract Pond is Ownable, CredentialVerifier {
 
         require(address(loan) == _loan, "Growr. - Loan does not exists");
 
-        // uint interestAmount = loan.interestAmount();
-        // uint256 remainingInterest = interestAmount.sub(
-        //     loan.repaidInterestAmount()
-        // );
-        // console.log(interestAmount, loan.repaidInterestAmount());
-        // uint256 remainingPrincipal = _amount.sub(remainingInterest);
+        (uint256 principal, uint256 interest) = loan.repay(_amount);
 
-        // totalUtilized = totalUtilized.sub(remainingPrincipal);
+        totalUtilized = totalUtilized.sub(principal);
+        totalInterest = totalInterest.add(interest);
 
-        loan.repay(_amount);
-
+        // console.log(principal, interest);
         params.token.transferFrom(msg.sender, address(this), _amount);
     }
 }

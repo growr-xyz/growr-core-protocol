@@ -128,7 +128,100 @@ describe("Testing contract Pond", function () {
 			expect(details._params.duration.toNumber()).to.equal(duration);
 		});
 
-		it("Positive case - Repay more than installment amount", async () => {
+		it("Positive case - Repay partial installment interest payment", async () => {
+			const amount = ethers.utils.parseUnits("150", "ether");
+			const repayAmount = ethers.utils.parseUnits("0.5", "ether");
+
+			const duration = 5;
+
+			const LoanContract = await ethers.getContractFactory("Loan");
+
+			const balanceBefore = await xUSD.balanceOf(signer0.address);
+
+			await pond.borrow(amount, duration);
+
+			const balanceAfter = await xUSD.balanceOf(signer0.address);
+
+			const loanAddress = await pond.getLoan(signer0.address);
+			const loan = LoanContract.attach(loanAddress);
+
+			const detailsBefore = await loan.getDetails();
+
+			await xUSD.approve(pond.address, repayAmount);
+			await pond.repay(repayAmount, loanAddress);
+
+			const detailsAfter = await loan.getDetails();
+
+			expect(detailsAfter._receipt.nextInstallmentAmount).to.equal(ethers.utils.parseUnits("32", "ether"));
+			expect(detailsAfter._receipt.nextInstallmentInterest).to.equal(ethers.utils.parseUnits("2", "ether"));
+			expect(balanceBefore).to.be.lt(balanceAfter);
+			expect(detailsBefore._params.amount).to.equal(amount);
+			expect(detailsBefore._params.duration.toNumber()).to.equal(duration);
+		});
+
+		it("Positive case - Repay partial installment payment", async () => {
+			const amount = ethers.utils.parseUnits("150", "ether");
+			const repayAmount = ethers.utils.parseUnits("20", "ether");
+
+			const duration = 5;
+
+			const LoanContract = await ethers.getContractFactory("Loan");
+
+			const balanceBefore = await xUSD.balanceOf(signer0.address);
+
+			await pond.borrow(amount, duration);
+
+			const balanceAfter = await xUSD.balanceOf(signer0.address);
+
+			const loanAddress = await pond.getLoan(signer0.address);
+			const loan = LoanContract.attach(loanAddress);
+
+			const detailsBefore = await loan.getDetails();
+
+			await xUSD.approve(pond.address, repayAmount);
+			await pond.repay(repayAmount, loanAddress);
+
+			const detailsAfter = await loan.getDetails();
+
+			expect(detailsAfter._receipt.nextInstallmentAmount).to.equal(ethers.utils.parseUnits("12.5", "ether"));
+			expect(detailsAfter._receipt.nextInstallmentInterest).to.equal(ethers.utils.parseUnits("0", "ether"));
+			expect(balanceBefore).to.be.lt(balanceAfter);
+			expect(detailsBefore._params.amount).to.equal(amount);
+			expect(detailsBefore._params.duration.toNumber()).to.equal(duration);
+		});
+
+		it("Positive case - Repay full installment payment + partial interest payment", async () => {
+			const amount = ethers.utils.parseUnits("150", "ether");
+			const repayAmount = ethers.utils.parseUnits("34", "ether");
+
+			const duration = 5;
+
+			const LoanContract = await ethers.getContractFactory("Loan");
+
+			const balanceBefore = await xUSD.balanceOf(signer0.address);
+
+			await pond.borrow(amount, duration);
+
+			const balanceAfter = await xUSD.balanceOf(signer0.address);
+
+			const loanAddress = await pond.getLoan(signer0.address);
+			const loan = LoanContract.attach(loanAddress);
+
+			const detailsBefore = await loan.getDetails();
+
+			await xUSD.approve(pond.address, repayAmount);
+			await pond.repay(repayAmount, loanAddress);
+
+			const detailsAfter = await loan.getDetails();
+
+			expect(detailsAfter._receipt.nextInstallmentAmount).to.equal(ethers.utils.parseUnits("31", "ether"));
+			expect(detailsAfter._receipt.nextInstallmentInterest).to.equal(ethers.utils.parseUnits("1", "ether"));
+			expect(balanceBefore).to.be.lt(balanceAfter);
+			expect(detailsBefore._params.amount).to.equal(amount);
+			expect(detailsBefore._params.duration.toNumber()).to.equal(duration);
+		});
+
+		it("Positive case - Repay full + partial installment payment", async () => {
 			const amount = ethers.utils.parseUnits("150", "ether");
 			const repayAmount = ethers.utils.parseUnits("50", "ether");
 
@@ -147,15 +240,76 @@ describe("Testing contract Pond", function () {
 
 			const detailsBefore = await loan.getDetails();
 
-			console.log(detailsBefore);
+			await xUSD.approve(pond.address, repayAmount);
+			await pond.repay(repayAmount, loanAddress);
+
+			const detailsAfter = await loan.getDetails();
+
+			expect(detailsAfter._receipt.nextInstallmentAmount).to.equal(ethers.utils.parseUnits("15", "ether"));
+			expect(detailsAfter._receipt.nextInstallmentInterest).to.equal(ethers.utils.parseUnits("0", "ether"));
+			expect(balanceBefore).to.be.lt(balanceAfter);
+			expect(detailsBefore._params.amount).to.equal(amount);
+			expect(detailsBefore._params.duration.toNumber()).to.equal(duration);
+		});
+
+		it("Positive case - Repay 2 full installment payments", async () => {
+			const amount = ethers.utils.parseUnits("150", "ether");
+			const repayAmount = ethers.utils.parseUnits("65", "ether");
+
+			const duration = 5;
+
+			const LoanContract = await ethers.getContractFactory("Loan");
+
+			const balanceBefore = await xUSD.balanceOf(signer0.address);
+
+			await pond.borrow(amount, duration);
+
+			const balanceAfter = await xUSD.balanceOf(signer0.address);
+
+			const loanAddress = await pond.getLoan(signer0.address);
+			const loan = LoanContract.attach(loanAddress);
+
+			const detailsBefore = await loan.getDetails();
 
 			await xUSD.approve(pond.address, repayAmount);
 			await pond.repay(repayAmount, loanAddress);
 
 			const detailsAfter = await loan.getDetails();
 
-			console.log(detailsAfter);
+			expect(detailsAfter._receipt.nextInstallmentAmount).to.equal(ethers.utils.parseUnits("32.5", "ether"));
+			expect(detailsAfter._receipt.nextInstallmentInterest).to.equal(ethers.utils.parseUnits("2.5", "ether"));
+			expect(balanceBefore).to.be.lt(balanceAfter);
+			expect(detailsBefore._params.amount).to.equal(amount);
+			expect(detailsBefore._params.duration.toNumber()).to.equal(duration);
+		});
 
+		it("Positive case - Repay full loan", async () => {
+			const amount = ethers.utils.parseUnits("150", "ether");
+			const repayAmount = ethers.utils.parseUnits("162.5", "ether");
+
+			const duration = 5;
+
+			const LoanContract = await ethers.getContractFactory("Loan");
+
+			const balanceBefore = await xUSD.balanceOf(signer0.address);
+
+			await pond.borrow(amount, duration);
+
+			const balanceAfter = await xUSD.balanceOf(signer0.address);
+
+			const loanAddress = await pond.getLoan(signer0.address);
+			const loan = LoanContract.attach(loanAddress);
+
+			const detailsBefore = await loan.getDetails();
+
+			await xUSD.approve(pond.address, repayAmount);
+			await pond.repay(repayAmount, loanAddress);
+
+			const detailsAfter = await loan.getDetails();
+
+			expect(detailsAfter._receipt.nextInstallmentAmount).to.equal(ethers.utils.parseUnits("0", "ether"));
+			expect(detailsAfter._receipt.nextInstallmentInterest).to.equal(ethers.utils.parseUnits("0", "ether"));
+			// expect(detailsAfter._receipt.nextInstallmentDate).to.equal(ethers.utils.parseUnits("0", "ethers"));
 			expect(balanceBefore).to.be.lt(balanceAfter);
 			expect(detailsBefore._params.amount).to.equal(amount);
 			expect(detailsBefore._params.duration.toNumber()).to.equal(duration);
