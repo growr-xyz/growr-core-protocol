@@ -17,10 +17,10 @@ contract Loan {
 
     Types.LoanParams private params;
 
-    uint256 public interestAmount; // monthly interest amount
-    uint256 public totalInterestAmount; // total interest amount for the whole period
-    uint256 public totalAmount; // total loan amount + interest
-    uint256 public installmentAmount; // amount to be paid every month
+    uint256 public totalInterest; // total interest amount to be paid for the whole period
+    uint256 public totalAmount; // total amount + interest to be paid
+    uint256 public installmentInterest; // monthly interest amount
+    uint256 public installmentAmount; // principal + interest to be paid every month
     uint256 public repaidTotalAmount; // already repaid total amount + interest
     uint256 public repaidInterestAmount; // already repaid interest
     uint256 public issuedAt; // timestamp when the loan is issued
@@ -41,16 +41,16 @@ contract Loan {
         pond = msg.sender;
         issuedAt = block.timestamp;
 
-        totalInterestAmount = _amount
+        totalInterest = _amount
             .mul(_annualInterestRate)
             .mul(100)
             .mul(_duration)
             .div(10000)
             .div(12);
-        totalAmount = _amount.add(totalInterestAmount);
+        totalAmount = _amount.add(totalInterest);
 
         installmentAmount = totalAmount.div(_duration);
-        interestAmount = totalInterestAmount.div(_duration);
+        installmentInterest = totalInterest.div(_duration);
 
         params = Types.LoanParams({
             token: _token,
@@ -85,80 +85,25 @@ contract Loan {
         return elapsedDuration;
     }
 
-    function getNextInstallment2()
-        internal
-        view
-        returns (
-            uint256 _nextInstallmentDate,
-            uint256 _nextInstallmentAmount,
-            uint256 _nextInstallmentInterest
-        )
-    {
-        _nextInstallmentAmount = repaidTotalAmount == 0 ? installmentAmount : 0;
-        _nextInstallmentInterest = repaidInterestAmount == 0
-            ? interestAmount
-            : 0;
-
-        uint256 elapsedDuration = getElapsedDuration();
-        // calculates the minimum amount + interest that needs to be paid so far
-        uint256 expectedAmount = installmentAmount.mul(elapsedDuration);
-        uint256 expectedInterest = interestAmount.mul(elapsedDuration);
-        // if the loan is overdue, add the missing amount to next installment
-        if (expectedAmount > repaidTotalAmount) {
-            _nextInstallmentAmount = expectedAmount.sub(repaidTotalAmount);
-        }
-        // if the loan is overdue, add the missing interest to next installment
-        if (expectedInterest > repaidInterestAmount) {
-            _nextInstallmentInterest = expectedInterest.sub(
-                repaidInterestAmount
-            );
-        }
-
-        // if the loan is prematured, substract the extra amount from next installment amount
-        if (repaidTotalAmount > expectedAmount) {
-            uint256 repaidInstallments = repaidTotalAmount.div(
-                installmentAmount
-            );
-            uint256 repaidExtra = repaidTotalAmount.sub(
-                installmentAmount.mul(repaidInstallments)
-            );
-            uint256 remainingAmount = totalAmount.sub(repaidTotalAmount);
-
-            _nextInstallmentAmount = remainingAmount > installmentAmount
-                ? installmentAmount.sub(repaidExtra)
-                : remainingAmount;
-        }
-
-        return (
-            _nextInstallmentDate,
-            _nextInstallmentAmount,
-            _nextInstallmentInterest
-        );
-    }
-
     // TODO: refactor
     function getNextInstallment()
         internal
         view
-        returns (
-            uint256 _nextInstallmentDate,
-            uint256 _nextInstallmentAmount,
-            uint256 _nextInstallmentInterest
-        )
+        returns (Types.NextInstallment memory _nextInstallment)
     {
         uint256 elapsedDuration = getElapsedDuration();
 
-        _nextInstallmentAmount = installmentAmount;
-        _nextInstallmentInterest = interestAmount;
+        _nextInstallment.total = installmentAmount;
+        _nextInstallment.interest = installmentInterest;
         // uint256 elapsedDuration = getElapsedDuration();
         uint256 repaidInstallments = elapsedDuration;
         // calculates the minimum amount + interest that needs to be paid so far
         uint256 expectedAmount = installmentAmount.mul(elapsedDuration);
-        uint256 expectedInterest = interestAmount.mul(elapsedDuration);
+        uint256 expectedInterest = installmentInterest.mul(elapsedDuration);
 
         // if the loan is overdue, add the missing amount to next installment
         if (expectedAmount > repaidTotalAmount) {
-            _nextInstallmentAmount = expectedAmount.sub(repaidTotalAmount);
+            _nextInstallment.total = expectedAmount.sub(repaidTotalAmount);
         }
         // if the loan is prematured, substract the extra amount from next installment amount
         if (repaidTotalAmount > expectedAmount) {
@@ -168,37 +113,39 @@ contract Loan {
             );
             uint256 remainingAmount = totalAmount.sub(repaidTotalAmount);
 
-            _nextInstallmentAmount = remainingAmount > installmentAmount
+            _nextInstallment.total = remainingAmount > installmentAmount
                 ? installmentAmount.sub(repaidExtra)
                 : remainingAmount;
         }
 
         // if the loan is overdue, add the missing interest to next installment
         if (expectedInterest > repaidInterestAmount) {
-            _nextInstallmentInterest = expectedInterest.sub(
+            _nextInstallment.interest = expectedInterest.sub(
                 repaidInterestAmount
             );
         }
         // if the loan is prematured, substract the extra interest from next installment
         if (repaidInterestAmount > expectedInterest) {
             uint256 repaidExtra = repaidInterestAmount.sub(
-                interestAmount.mul(repaidInterestAmount.div(interestAmount))
+                installmentInterest.mul(
+                    repaidInterestAmount.div(installmentInterest)
+                )
             );
 
-            uint256 remainingInterest = totalInterestAmount.sub(
-                repaidInterestAmount
-            );
-            _nextInstallmentInterest = remainingInterest > interestAmount
-                ? interestAmount.sub(repaidExtra)
+            uint256 remainingInterest = totalInterest.sub(repaidInterestAmount);
+            _nextInstallment.interest = remainingInterest > installmentInterest
+                ? installmentInterest.sub(repaidExtra)
                 : remainingInterest;
 
-            // reset installment interest
+            // set next interest to 0
+            // if the interest is fully repaid for the current installment
+            // and the principal is still partially repaid
             if (
                 repaidExtra == 0 &&
-                _nextInstallmentAmount > 0 &&
-                _nextInstallmentAmount < installmentAmount
+                _nextInstallment.total > 0 &&
+                _nextInstallment.total < installmentAmount
             ) {
-                _nextInstallmentInterest = 0;
+                _nextInstallment.interest = 0;
             }
         }
 
@@ -206,13 +153,11 @@ contract Loan {
         uint256 duration = repaidInstallments.add(1);
         duration = duration > params.duration ? params.duration : duration;
 
-        _nextInstallmentDate = DateTime.addMonths(issuedAt, duration);
-
-        return (
-            _nextInstallmentDate,
-            _nextInstallmentAmount,
-            _nextInstallmentInterest
+        _nextInstallment.timestamp = DateTime.addMonths(issuedAt, duration);
+        _nextInstallment.principal = _nextInstallment.total.sub(
+            _nextInstallment.interest
         );
+        return _nextInstallment;
     }
 
     function getDetails()
@@ -223,24 +168,18 @@ contract Loan {
             Types.LoanReceipt memory _receipt
         )
     {
-        _receipt.totalAmount = totalAmount;
-        _receipt.totalInterestAmount = totalInterestAmount;
-        _receipt.repaidTotalAmount = repaidTotalAmount;
-        _receipt.repaidInterestAmount = repaidInterestAmount;
-        _receipt.installmentAmount = installmentAmount;
-        _receipt.interestAmount = interestAmount;
-
-        (
-            uint256 nextInstallmentDate,
-            uint256 nextInstallmentAmount,
-            uint256 nextInstallmentInterest
-        ) = getNextInstallment();
-
-        _receipt.nextInstallmentDate = nextInstallmentDate;
-        _receipt.nextInstallmentAmount = nextInstallmentAmount;
-        _receipt.nextInstallmentInterest = nextInstallmentInterest;
-
-        return (params, _receipt);
+        return (
+            params,
+            Types.LoanReceipt({
+                totalAmount: totalAmount,
+                totalInterest: totalInterest,
+                repaidTotalAmount: repaidTotalAmount,
+                repaidInterestAmount: repaidInterestAmount,
+                installmentAmount: installmentAmount,
+                installmentInterest: installmentInterest,
+                nextInstallment: getNextInstallment()
+            })
+        );
     }
 
     function repay(uint256 _amount)
@@ -253,39 +192,35 @@ contract Loan {
             "Growr. - Loan cannot be overrepaid"
         );
 
-        (
-            ,
-            uint256 nextInstallmentAmount,
-            uint256 nextInstallmentInterest
-        ) = getNextInstallment();
+        Types.NextInstallment memory nextInstallment = getNextInstallment();
 
         // repay partial interest first - if amount is less than the interest
         _interest = _amount;
 
         // repay full interest first - if partial or full installment payment
         if (
-            _amount > nextInstallmentInterest &&
-            _amount <= nextInstallmentAmount
+            _amount > nextInstallment.interest &&
+            _amount <= nextInstallment.total
         ) {
-            _interest = nextInstallmentInterest;
+            _interest = nextInstallment.interest;
         }
         // repay full interest + some interest in advance
-        if (_amount > nextInstallmentAmount) {
-            // substract nextInstallmentAmount cuz it might be less than full installment amount
-            uint256 fullInstallments = _amount.sub(nextInstallmentAmount).div(
+        if (_amount > nextInstallment.total) {
+            // substract nextInstallment.total cuz it might be less than full installment amount
+            uint256 fullInstallments = _amount.sub(nextInstallment.total).div(
                 installmentAmount
             );
-            uint256 partialInstallment = _amount.sub(nextInstallmentAmount).sub(
+            uint256 partialInstallment = _amount.sub(nextInstallment.total).sub(
                 installmentAmount.mul(fullInstallments)
             );
 
             // calculates how much interest to repay in advance
-            _interest = nextInstallmentInterest.add(
-                fullInstallments.mul(interestAmount)
+            _interest = nextInstallment.interest.add(
+                fullInstallments.mul(installmentInterest)
             );
 
-            if (partialInstallment > interestAmount) {
-                _interest = _interest.add(interestAmount);
+            if (partialInstallment > installmentInterest) {
+                _interest = _interest.add(installmentInterest);
             } else {
                 _interest = _interest.add(partialInstallment);
             }

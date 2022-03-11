@@ -39,6 +39,9 @@ contract Pond is Ownable, CredentialVerifier {
         params = _params;
     }
 
+    /**
+        returns available balance that can be borrowed
+     */
     function getAvailableBalance() private view returns (uint256) {
         return
             params.token.balanceOf(address(this)).sub(totalUtilized).sub(
@@ -53,10 +56,11 @@ contract Pond is Ownable, CredentialVerifier {
             Types.PondParams memory _params,
             Types.PondCriteria[] memory _criteria,
             uint256 _totalDeposited,
-            uint256 _totalUtilized
+            uint256 _totalUtilized,
+            uint256 _totalInterest
         )
     {
-        return (params, criteria, totalDeposited, totalUtilized);
+        return (params, criteria, totalDeposited, totalUtilized, totalInterest);
     }
 
     /**
@@ -71,6 +75,7 @@ contract Pond is Ownable, CredentialVerifier {
     ) external view notClosed returns (Types.LoanOffer memory _loan) {
         uint256 amount = _amount;
         uint256 duration = _duration;
+
         // get most suitable loan amount
         if (amount < params.minLoanAmount) amount = params.minLoanAmount;
         else if (amount > params.maxLoanAmount) amount = params.maxLoanAmount;
@@ -102,12 +107,12 @@ contract Pond is Ownable, CredentialVerifier {
 
         if (eligible) {
             _loan.approved = true;
-            _loan.totalInterestAmount = amount
+            _loan.totalInterest = amount
                 .mul(params.annualInterestRate)
                 .mul(duration)
                 .div(100)
                 .div(12);
-            _loan.totalAmount = amount.add(_loan.totalInterestAmount);
+            _loan.totalAmount = amount.add(_loan.totalInterest);
             _loan.installmentAmount = _loan.totalAmount.div(duration);
         }
 

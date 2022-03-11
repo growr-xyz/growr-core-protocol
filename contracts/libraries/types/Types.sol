@@ -43,7 +43,7 @@ library Types {
         uint256 annualInterestRate;
         uint256 disbursmentFee;
         uint256 cashBackRate;
-        uint256 totalInterestAmount;
+        uint256 totalInterest;
         uint256 totalAmount;
         uint256 installmentAmount;
     }
@@ -57,15 +57,20 @@ library Types {
         uint256 cashBackRate;
     }
 
+    struct NextInstallment {
+        uint256 timestamp;
+        uint256 interest;
+        uint256 principal;
+        uint256 total;
+    }
+
     struct LoanReceipt {
         uint256 totalAmount;
-        uint256 totalInterestAmount;
+        uint256 totalInterest;
         uint256 repaidTotalAmount;
         uint256 repaidInterestAmount;
         uint256 installmentAmount;
-        uint256 interestAmount;
-        uint256 nextInstallmentDate;
-        uint256 nextInstallmentAmount;
-        uint256 nextInstallmentInterest;
+        uint256 installmentInterest;
+        NextInstallment nextInstallment;
     }
 }

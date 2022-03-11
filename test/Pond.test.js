@@ -151,9 +151,10 @@ describe("Testing contract Pond", function () {
 			await pond.repay(repayAmount, loanAddress);
 
 			const detailsAfter = await loan.getDetails();
-
-			expect(detailsAfter._receipt.nextInstallmentAmount).to.equal(ethers.utils.parseUnits("32", "ether"));
-			expect(detailsAfter._receipt.nextInstallmentInterest).to.equal(ethers.utils.parseUnits("2", "ether"));
+            
+            console.log(detailsAfter)
+			expect(detailsAfter._receipt.nextInstallment.total).to.equal(ethers.utils.parseUnits("32", "ether"));
+			expect(detailsAfter._receipt.nextInstallment.interest).to.equal(ethers.utils.parseUnits("2", "ether"));
 			expect(balanceBefore).to.be.lt(balanceAfter);
 			expect(detailsBefore._params.amount).to.equal(amount);
 			expect(detailsBefore._params.duration.toNumber()).to.equal(duration);
@@ -183,8 +184,8 @@ describe("Testing contract Pond", function () {
 
 			const detailsAfter = await loan.getDetails();
 
-			expect(detailsAfter._receipt.nextInstallmentAmount).to.equal(ethers.utils.parseUnits("12.5", "ether"));
-			expect(detailsAfter._receipt.nextInstallmentInterest).to.equal(ethers.utils.parseUnits("0", "ether"));
+			expect(detailsAfter._receipt.nextInstallment.total).to.equal(ethers.utils.parseUnits("12.5", "ether"));
+			expect(detailsAfter._receipt.nextInstallment.interest).to.equal(ethers.utils.parseUnits("0", "ether"));
 			expect(balanceBefore).to.be.lt(balanceAfter);
 			expect(detailsBefore._params.amount).to.equal(amount);
 			expect(detailsBefore._params.duration.toNumber()).to.equal(duration);
@@ -214,8 +215,8 @@ describe("Testing contract Pond", function () {
 
 			const detailsAfter = await loan.getDetails();
 
-			expect(detailsAfter._receipt.nextInstallmentAmount).to.equal(ethers.utils.parseUnits("31", "ether"));
-			expect(detailsAfter._receipt.nextInstallmentInterest).to.equal(ethers.utils.parseUnits("1", "ether"));
+			expect(detailsAfter._receipt.nextInstallment.total).to.equal(ethers.utils.parseUnits("31", "ether"));
+			expect(detailsAfter._receipt.nextInstallment.interest).to.equal(ethers.utils.parseUnits("1", "ether"));
 			expect(balanceBefore).to.be.lt(balanceAfter);
 			expect(detailsBefore._params.amount).to.equal(amount);
 			expect(detailsBefore._params.duration.toNumber()).to.equal(duration);
@@ -245,8 +246,8 @@ describe("Testing contract Pond", function () {
 
 			const detailsAfter = await loan.getDetails();
 
-			expect(detailsAfter._receipt.nextInstallmentAmount).to.equal(ethers.utils.parseUnits("15", "ether"));
-			expect(detailsAfter._receipt.nextInstallmentInterest).to.equal(ethers.utils.parseUnits("0", "ether"));
+			expect(detailsAfter._receipt.nextInstallment.total).to.equal(ethers.utils.parseUnits("15", "ether"));
+			expect(detailsAfter._receipt.nextInstallment.interest).to.equal(ethers.utils.parseUnits("0", "ether"));
 			expect(balanceBefore).to.be.lt(balanceAfter);
 			expect(detailsBefore._params.amount).to.equal(amount);
 			expect(detailsBefore._params.duration.toNumber()).to.equal(duration);
@@ -276,8 +277,8 @@ describe("Testing contract Pond", function () {
 
 			const detailsAfter = await loan.getDetails();
 
-			expect(detailsAfter._receipt.nextInstallmentAmount).to.equal(ethers.utils.parseUnits("32.5", "ether"));
-			expect(detailsAfter._receipt.nextInstallmentInterest).to.equal(ethers.utils.parseUnits("2.5", "ether"));
+			expect(detailsAfter._receipt.nextInstallment.total).to.equal(ethers.utils.parseUnits("32.5", "ether"));
+			expect(detailsAfter._receipt.nextInstallment.interest).to.equal(ethers.utils.parseUnits("2.5", "ether"));
 			expect(balanceBefore).to.be.lt(balanceAfter);
 			expect(detailsBefore._params.amount).to.equal(amount);
 			expect(detailsBefore._params.duration.toNumber()).to.equal(duration);
@@ -307,8 +308,8 @@ describe("Testing contract Pond", function () {
 
 			const detailsAfter = await loan.getDetails();
 
-			expect(detailsAfter._receipt.nextInstallmentAmount).to.equal(ethers.utils.parseUnits("0", "ether"));
-			expect(detailsAfter._receipt.nextInstallmentInterest).to.equal(ethers.utils.parseUnits("0", "ether"));
+			expect(detailsAfter._receipt.nextInstallment.total).to.equal(ethers.utils.parseUnits("0", "ether"));
+			expect(detailsAfter._receipt.nextInstallment.interest).to.equal(ethers.utils.parseUnits("0", "ether"));
 			// expect(detailsAfter._receipt.nextInstallmentDate).to.equal(ethers.utils.parseUnits("0", "ethers"));
 			expect(balanceBefore).to.be.lt(balanceAfter);
 			expect(detailsBefore._params.amount).to.equal(amount);
