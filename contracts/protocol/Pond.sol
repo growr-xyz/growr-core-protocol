@@ -119,13 +119,6 @@ contract Pond is Ownable, CredentialVerifier {
         return _loan;
     }
 
-    function deposit(uint256 amount) external notClosed {
-        totalDeposited = totalDeposited.add(amount);
-        getLenderBalance[msg.sender] = getLenderBalance[msg.sender].add(amount);
-
-        params.token.transferFrom(msg.sender, address(this), amount);
-    }
-
     function borrow(uint256 _amount, uint256 _duration) public {
         require(
             _amount >= params.minLoanAmount,
@@ -180,5 +173,35 @@ contract Pond is Ownable, CredentialVerifier {
 
         // console.log(principal, interest);
         params.token.transferFrom(msg.sender, address(this), _amount);
+    }
+
+    function deposit(uint256 amount) external notClosed {
+        totalDeposited = totalDeposited.add(amount);
+        getLenderBalance[msg.sender] = getLenderBalance[msg.sender].add(amount);
+
+        params.token.transferFrom(msg.sender, address(this), amount);
+    }
+
+    function withdraw(uint256 _amount) external {
+        uint256 lenderBalance = getLenderBalance[msg.sender];
+        uint256 availableAmount = getAvailableBalance();
+
+        require(
+            lenderBalance > 0 && lenderBalance >= _amount,
+            "Growr. - Withdrawal amount exceeds your balance"
+        );
+        require(
+            availableAmount >= _amount,
+            "Growr. - Withdrawal amount exceeds available balance"
+        );
+
+        // reduce lender's balance and total amount of deposited funds
+        getLenderBalance[msg.sender] = lenderBalance.sub(_amount);
+        totalDeposited = totalDeposited.sub(_amount);
+
+        // TODO: withdraw interest
+        // totalInterest = ??
+
+        params.token.transfer(msg.sender, _amount);
     }
 }

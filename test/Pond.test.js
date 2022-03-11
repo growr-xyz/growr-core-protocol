@@ -44,7 +44,7 @@ describe("Testing contract Pond", function () {
 		await pond.connect(signer0).deposit(ethers.utils.parseUnits("500", "ether"));
 	});
 
-	describe.skip("Getting a loan offer", () => {
+	describe("Getting a loan offer", () => {
 		// it("Positive case - Get pond details", async () => {
 		// 	const details = await pond.getDetails();
 
@@ -106,7 +106,7 @@ describe("Testing contract Pond", function () {
 	});
 
 	describe("Get a real loan", async () => {
-		it.skip("Positive case - Get a loan", async () => {
+		it("Positive case - Get a loan", async () => {
 			const amount = ethers.utils.parseUnits("150", "ether");
 			const duration = 5;
 
@@ -151,8 +151,7 @@ describe("Testing contract Pond", function () {
 			await pond.repay(repayAmount, loanAddress);
 
 			const detailsAfter = await loan.getDetails();
-            
-            console.log(detailsAfter)
+
 			expect(detailsAfter._receipt.nextInstallment.total).to.equal(ethers.utils.parseUnits("32", "ether"));
 			expect(detailsAfter._receipt.nextInstallment.interest).to.equal(ethers.utils.parseUnits("2", "ether"));
 			expect(balanceBefore).to.be.lt(balanceAfter);
@@ -314,6 +313,48 @@ describe("Testing contract Pond", function () {
 			expect(balanceBefore).to.be.lt(balanceAfter);
 			expect(detailsBefore._params.amount).to.equal(amount);
 			expect(detailsBefore._params.duration.toNumber()).to.equal(duration);
+		});
+	});
+
+	describe("Withdraw funds", () => {
+		it("Positive case - Withdraw full deposit(not utilizied yet)", async () => {
+			const amount = ethers.utils.parseUnits("500", "ether");
+
+			const beforeWithdraw = await pond.getLenderBalance(signer0.address);
+			const beforeBalance = await xUSD.balanceOf(signer0.address);
+			await pond.withdraw(amount);
+			const afterWithdraw = await pond.getLenderBalance(signer0.address);
+			const afterBalance = await xUSD.balanceOf(signer0.address);
+
+			expect(beforeWithdraw).to.be.gt(afterWithdraw);
+			expect(afterWithdraw).to.equal(ethers.utils.parseUnits("0", "ether"));
+			expect(beforeBalance).to.be.lt(afterBalance);
+		});
+
+		it("Negative case - Withdraw more than deposited(not utilizied yet)", async () => {
+			const amount = ethers.utils.parseUnits("550", "ether");
+
+			await expect(pond.withdraw(amount)).to.be.revertedWith("Growr. - Withdrawal amount exceeds your balance");
+		});
+
+		it("Negative case - The user is not a lender", async () => {
+			const amount = ethers.utils.parseUnits("550", "ether");
+
+			await expect(pond.connect(signer1).withdraw(amount)).to.be.revertedWith(
+				"Growr. - Withdrawal amount exceeds your balance"
+			);
+		});
+
+		it("Negative case - Withdraw more than available balance", async () => {
+			const amount = ethers.utils.parseUnits("450", "ether");
+
+			const borrowAmount = ethers.utils.parseUnits("150", "ether");
+			const duration = 5;
+			await pond.borrow(borrowAmount, duration);
+
+			await expect(pond.withdraw(amount)).to.be.revertedWith(
+				"Growr. - Withdrawal amount exceeds available balance"
+			);
 		});
 	});
 });

@@ -3,7 +3,7 @@ const { ethers } = require("hardhat");
 
 const PondFactoryUtils = require("./PondFactory.utils");
 
-describe.skip("Testing contract PondFactory", function () {
+describe("Testing contract PondFactory", function () {
 	let factory, factoryUtils, xUSD, signer0, signer1;
 
 	beforeEach(async () => {
