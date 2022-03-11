@@ -6,7 +6,7 @@ async function main() {
 
 	const [owner, account1, account2, _] = await hre.ethers.getSigners();
 
-	const xUSDContract = await hre.ethers.getContractFactory("xUSDMocked");
+	const xUSDContract = await hre.ethers.getContractFactory("XUSD");
 	const xUSD = await xUSDContract.deploy();
 
 	await xUSD.deployed();
