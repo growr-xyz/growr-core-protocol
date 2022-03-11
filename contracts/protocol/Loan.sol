@@ -63,7 +63,7 @@ contract Loan {
     }
 
     /**
-        counts how many months have passed from the beginning to the present
+        counts how many months have passed since the beginning of the loan
      */
     function getElapsedDuration() internal view returns (uint256) {
         /*
