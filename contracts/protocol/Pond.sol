@@ -42,7 +42,7 @@ contract Pond is Ownable, CredentialVerifier {
     /**
         returns available balance that can be borrowed
      */
-    function getAvailableBalance() private view returns (uint256) {
+    function getAvailableBalance() public view returns (uint256) {
         return
             params.token.balanceOf(address(this)).sub(totalUtilized).sub(
                 totalInterest
