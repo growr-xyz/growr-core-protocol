@@ -8,6 +8,7 @@
 		"script:dev": "npx hardhat run --network localhost",
 		"script:dev:deploy": "npx hardhat run --network localhost scripts/deploy/PondFactory.js",
 		"script:dev:xUSD": "npx hardhat run --network localhost scripts/dev/create-and-distribute-xUSD.js",
+		"script:dev:DOC": "npx hardhat run --network localhost scripts/dev/create-and-distribute-DOC.js",
 		"test": "npx hardhat test"
 	},
 	"repository": {
