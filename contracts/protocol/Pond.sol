@@ -11,6 +11,7 @@ import "./Pond.sol";
 import "./Loan.sol";
 import "./CredentialVerifier.sol";
 import "../libraries/types/Types.sol";
+
 // import "../interfaces/IWRBTC.sol";
 
 contract Pond is Ownable, CredentialVerifier {
@@ -19,6 +20,7 @@ contract Pond is Ownable, CredentialVerifier {
     Types.PondParams private params;
 
     // address public immutable WRBTC;
+    address public immutable verificationRegistry;
 
     mapping(address => uint256) public getLenderBalance;
     mapping(address => Loan) public getLoan;
@@ -36,6 +38,7 @@ contract Pond is Ownable, CredentialVerifier {
 
     constructor(
         // address _wrbtc,
+        address _verificationRegistry,
         Types.PondParams memory _params,
         Types.PondCriteriaInput memory _criteria
     ) CredentialVerifier(_criteria) {
@@ -43,6 +46,7 @@ contract Pond is Ownable, CredentialVerifier {
         params = _params;
 
         // WRBTC = address(0); //_wrbtc;
+        verificationRegistry = _verificationRegistry;
     }
 
     /**

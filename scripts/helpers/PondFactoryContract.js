@@ -1,4 +1,6 @@
-const { ethers } = require("hardhat");
+const hre = require("hardhat");
+
+const ContractHelper = require("./Contract");
 
 const defaultParams = {
 	name: "Pond 1",
@@ -18,14 +20,18 @@ const defaultCriteria = {
 	operators: ["="],
 };
 
-module.exports = (factory, xUSD) => {
-	return {
-		defaultParams,
-		defaultCriteria,
+module.exports.defaultParams = defaultParams;
+module.exports.defaultCriteria = defaultCriteria;
+
+module.exports.deploy = async function (...params) {
+	const Contract = await ContractHelper.deploy("PondFactory", ...params);
+
+	await Contract.deployed();
+
+	Contract.helpers = {
 		createPond: async (_params, _criteria) => {
 			_params = {
 				...defaultParams,
-				token: xUSD.address,
 				..._params,
 			};
 			_criteria = {
@@ -33,7 +39,7 @@ module.exports = (factory, xUSD) => {
 				..._criteria,
 			};
 
-			return await factory.createPond(
+			return await Contract.createPond(
 				{
 					name: _params.name,
 					token: _params.token,
@@ -49,4 +55,6 @@ module.exports = (factory, xUSD) => {
 			);
 		},
 	};
+
+	return Contract;
 };

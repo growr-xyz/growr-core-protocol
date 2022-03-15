@@ -5,9 +5,9 @@
 	"main": "hardhat.config.js",
 	"scripts": {
 		"node:local": "npx hardhat node",
-		"script:dev": "npx hardhat run --network localhost",
-		"script:dev:deploy:protocol": "npx hardhat run --network localhost scripts/deploy/PondFactory.js",
-		"script:dev:deploy:tokens": "npx hardhat run --network localhost scripts/dev/create-and-distribute-tokens.js",
+		"script": "npx hardhat run --network localhost",
+		"script:dev:deploy-protocol": "npx hardhat run --network localhost scripts/dev/deploy-protocol.js",
+		"script:dev:mint-tokens": "npx hardhat run --network localhost scripts/dev/mint-tokens.js",
 		"test": "npx hardhat test"
 	},
 	"repository": {
