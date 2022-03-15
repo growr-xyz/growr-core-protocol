@@ -3,17 +3,17 @@ const { ethers } = require("hardhat");
 
 const PondFactoryUtils = require("./PondFactory.utils");
 
-describe.skip("Testing contract PondFactory", function () {
+describe("Testing contract PondFactory", function () {
 	let factory, factoryUtils, xUSD, signer0, signer1;
 
 	beforeEach(async () => {
 		const xUSDAmount = hre.ethers.utils.parseUnits("1000", "ether");
 
 		const PondFactory = await ethers.getContractFactory("PondFactory");
-		const xUSDContract = await ethers.getContractFactory("XUSD");
+		const TokenContract = await ethers.getContractFactory("Token");
 
 		factory = await PondFactory.deploy();
-		xUSD = await xUSDContract.deploy();
+		xUSD = await TokenContract.deploy("xUSD Token", "XUSD");
 
 		await factory.deployed();
 		await xUSD.deployed();
@@ -44,8 +44,7 @@ describe.skip("Testing contract PondFactory", function () {
 			const pondAddress = await factory.getUserPond(signer0.address, userPondsLength - 1);
 
 			const pond = await PondContract.attach(pondAddress);
-            
-            console.log(await pond.getDetails());
+
 			expect(await pond.owner()).to.equal(signer0.address);
 		});
 

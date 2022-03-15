@@ -10,11 +10,11 @@ describe("Testing contract Pond", function () {
 		const xUSDAmount = hre.ethers.utils.parseUnits("1000", "ether");
 
 		const PondFactory = await ethers.getContractFactory("PondFactory");
-		const xUSDContract = await ethers.getContractFactory("XUSD");
+		const TokenContract = await ethers.getContractFactory("Token");
 		const PondContract = await ethers.getContractFactory("Pond");
 
 		factory = await PondFactory.deploy();
-		xUSD = await xUSDContract.deploy();
+		xUSD = await TokenContract.deploy("xUSD Token", "XUSD");
 
 		await factory.deployed();
 		await xUSD.deployed();
@@ -54,7 +54,7 @@ describe("Testing contract Pond", function () {
 		it("Positive case - No credential check", async () => {
 			const amount = ethers.utils.parseUnits("150", "ether");
 			const offer = await pond.getLoanOffer(amount, 10, { names: [], contents: [] });
-			console.log(await pond.verifyCredentials({ names: ["citizenship"], contents: [] }));
+            
 			expect(offer.approved).to.equal(true);
 		});
 
