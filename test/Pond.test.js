@@ -10,7 +10,7 @@ describe("Testing contract Pond", function () {
 		const xUSDAmount = hre.ethers.utils.parseUnits("1000", "ether");
 
 		const PondFactory = await ethers.getContractFactory("PondFactory");
-		const xUSDContract = await ethers.getContractFactory("xUSDMocked");
+		const xUSDContract = await ethers.getContractFactory("XUSD");
 		const PondContract = await ethers.getContractFactory("Pond");
 
 		factory = await PondFactory.deploy();
@@ -54,7 +54,7 @@ describe("Testing contract Pond", function () {
 		it("Positive case - No credential check", async () => {
 			const amount = ethers.utils.parseUnits("150", "ether");
 			const offer = await pond.getLoanOffer(amount, 10, { names: [], contents: [] });
-
+			console.log(await pond.verifyCredentials({ names: ["citizenship"], contents: [] }));
 			expect(offer.approved).to.equal(true);
 		});
 
@@ -97,11 +97,10 @@ describe("Testing contract Pond", function () {
 			expect(offer.approved).to.equal(false);
 		});
 
-		it("Negative case - Should throw error for invalid credentials", async () => {
+		it("Positive case - Should not approve with invalid credentials", async () => {
 			const amount = ethers.utils.parseUnits("150", "ether");
-			await expect(pond.getLoanOffer(amount, 10, { names: [], contents: ["SV"] })).to.be.revertedWith(
-				"Growr. - Invalid personal credentials"
-			);
+			const offer = await pond.getLoanOffer(amount, 10, { names: [], contents: ["SV"] });
+			expect(offer.approved).to.equal(false);
 		});
 	});
 

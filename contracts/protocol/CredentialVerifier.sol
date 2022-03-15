@@ -74,11 +74,10 @@ contract CredentialVerifier {
 
     function verifyCredentials(
         Types.PersonalCredentialsInput memory _credentials
-    ) internal view returns (bool) {
-        require(
-            _credentials.names.length == _credentials.contents.length,
-            "Growr. - Invalid personal credentials"
-        );
+    ) public view returns (bool) {
+        if (_credentials.names.length != _credentials.contents.length) {
+            return false;
+        }
 
         bool verified = true;
         for (uint256 i = 0; i < _credentials.names.length; i++) {
@@ -91,5 +90,15 @@ contract CredentialVerifier {
         }
 
         return verified;
+    }
+
+    function getCriteriaNames() public view returns (string[] memory) {
+        string[] memory names = new string[](criteria.length);
+
+        for (uint256 index = 0; index < criteria.length; index++) {
+            names[index] = criteria[index]._name;
+        }
+
+        return names;
     }
 }
