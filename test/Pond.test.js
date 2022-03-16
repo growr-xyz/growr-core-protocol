@@ -8,7 +8,7 @@ const ContractHelper = require("../scripts/helpers/Contract");
 const { defaultParams } = require("../scripts/helpers/PondFactoryContract");
 
 describe("Testing contract Pond", function () {
-	let factory, registry, pond, xUSD, signer0, signer1;
+	let factory, registry, pond, xUSD, owner, verifier, borrower, signer1;
 
 	beforeEach(async () => {
 		const xUSDAmount = hre.ethers.utils.parseUnits("1000", "ether");
@@ -20,9 +20,11 @@ describe("Testing contract Pond", function () {
 		registry = VerificationRegistry;
 		factory = PondFactory;
 
-		[signer0, signer1, _] = await ethers.getSigners();
+		[owner, verifier, borrower, signer1] = await ethers.getSigners();
 
-		await XUSD.helpers.mint(signer0, xUSDAmount);
+		await XUSD.helpers.mint(owner, xUSDAmount);
+		await XUSD.helpers.mint(verifier, xUSDAmount);
+		await XUSD.helpers.mint(borrower, xUSDAmount);
 		await XUSD.helpers.mint(signer1, xUSDAmount);
 
 		xUSD = XUSD;
@@ -36,13 +38,16 @@ describe("Testing contract Pond", function () {
 				operators: ["="],
 			}
 		);
-		const userPondsLength = await factory.getUserPondsLength(signer0.address);
-		const pondAddress = await factory.getUserPond(signer0.address, userPondsLength - 1);
+		const userPondsLength = await factory.getUserPondsLength(owner.address);
+		const pondAddress = await factory.getUserPond(owner.address, userPondsLength - 1);
 
 		pond = await ContractHelper.attach("Pond", pondAddress);
 
-		await xUSD.connect(signer0).approve(pondAddress, ethers.utils.parseUnits("500", "ether"));
-		await pond.connect(signer0).deposit(ethers.utils.parseUnits("500", "ether"));
+		await xUSD.connect(owner).approve(pondAddress, ethers.utils.parseUnits("500", "ether"));
+		await pond.connect(owner).deposit(ethers.utils.parseUnits("500", "ether"));
+
+		await registry.connect(owner).addVerifier(verifier.address);
+		await registry.connect(verifier).registerVerification(borrower.address, pondAddress, 5 * 60);
 	});
 
 	describe("Getting a loan offer", () => {
@@ -110,14 +115,14 @@ describe("Testing contract Pond", function () {
 			const amount = ethers.utils.parseUnits("150", "ether");
 			const duration = 5;
 
-			const balanceBefore = await xUSD.balanceOf(signer0.address);
+			const balanceBefore = await xUSD.balanceOf(borrower.address);
 
-			await pond.borrow(amount, duration);
+			await pond.connect(borrower).borrow(amount, duration);
 
-			const balanceAfter = await xUSD.balanceOf(signer0.address);
+			const balanceAfter = await xUSD.balanceOf(borrower.address);
 
-			const loanAddress = await pond.getLoan(signer0.address);
-			const loan = await ContractHelper.attach("Loan",loanAddress);
+			const loanAddress = await pond.getLoan(borrower.address);
+			const loan = await ContractHelper.attach("Loan", loanAddress);
 
 			const details = await loan.getDetails();
 
@@ -132,19 +137,19 @@ describe("Testing contract Pond", function () {
 
 			const duration = 5;
 
-			const balanceBefore = await xUSD.balanceOf(signer0.address);
+			const balanceBefore = await xUSD.balanceOf(borrower.address);
 
-			await pond.borrow(amount, duration);
+			await pond.connect(borrower).borrow(amount, duration);
 
-			const balanceAfter = await xUSD.balanceOf(signer0.address);
+			const balanceAfter = await xUSD.balanceOf(borrower.address);
 
-			const loanAddress = await pond.getLoan(signer0.address);
-			const loan = await ContractHelper.attach("Loan",loanAddress);
+			const loanAddress = await pond.getLoan(borrower.address);
+			const loan = await ContractHelper.attach("Loan", loanAddress);
 
 			const detailsBefore = await loan.getDetails();
 
-			await xUSD.approve(pond.address, repayAmount);
-			await pond.repay(repayAmount, loanAddress);
+			await xUSD.connect(borrower).approve(pond.address, repayAmount);
+			await pond.connect(borrower).repay(repayAmount, loanAddress);
 
 			const detailsAfter = await loan.getDetails();
 
@@ -161,19 +166,19 @@ describe("Testing contract Pond", function () {
 
 			const duration = 5;
 
-			const balanceBefore = await xUSD.balanceOf(signer0.address);
+			const balanceBefore = await xUSD.balanceOf(borrower.address);
 
-			await pond.borrow(amount, duration);
+			await pond.connect(borrower).borrow(amount, duration);
 
-			const balanceAfter = await xUSD.balanceOf(signer0.address);
+			const balanceAfter = await xUSD.balanceOf(borrower.address);
 
-			const loanAddress = await pond.getLoan(signer0.address);
-			const loan = await ContractHelper.attach("Loan",loanAddress);
+			const loanAddress = await pond.getLoan(borrower.address);
+			const loan = await ContractHelper.attach("Loan", loanAddress);
 
 			const detailsBefore = await loan.getDetails();
 
-			await xUSD.approve(pond.address, repayAmount);
-			await pond.repay(repayAmount, loanAddress);
+			await xUSD.connect(borrower).approve(pond.address, repayAmount);
+			await pond.connect(borrower).repay(repayAmount, loanAddress);
 
 			const detailsAfter = await loan.getDetails();
 
@@ -190,19 +195,19 @@ describe("Testing contract Pond", function () {
 
 			const duration = 5;
 
-			const balanceBefore = await xUSD.balanceOf(signer0.address);
+			const balanceBefore = await xUSD.balanceOf(borrower.address);
 
-			await pond.borrow(amount, duration);
+			await pond.connect(borrower).borrow(amount, duration);
 
-			const balanceAfter = await xUSD.balanceOf(signer0.address);
+			const balanceAfter = await xUSD.balanceOf(borrower.address);
 
-			const loanAddress = await pond.getLoan(signer0.address);
-			const loan = await ContractHelper.attach("Loan",loanAddress);
+			const loanAddress = await pond.getLoan(borrower.address);
+			const loan = await ContractHelper.attach("Loan", loanAddress);
 
 			const detailsBefore = await loan.getDetails();
 
-			await xUSD.approve(pond.address, repayAmount);
-			await pond.repay(repayAmount, loanAddress);
+			await xUSD.connect(borrower).approve(pond.address, repayAmount);
+			await pond.connect(borrower).repay(repayAmount, loanAddress);
 
 			const detailsAfter = await loan.getDetails();
 
@@ -219,19 +224,19 @@ describe("Testing contract Pond", function () {
 
 			const duration = 5;
 
-			const balanceBefore = await xUSD.balanceOf(signer0.address);
+			const balanceBefore = await xUSD.balanceOf(borrower.address);
 
-			await pond.borrow(amount, duration);
+			await pond.connect(borrower).borrow(amount, duration);
 
-			const balanceAfter = await xUSD.balanceOf(signer0.address);
+			const balanceAfter = await xUSD.balanceOf(borrower.address);
 
-			const loanAddress = await pond.getLoan(signer0.address);
-			const loan = await ContractHelper.attach("Loan",loanAddress);
+			const loanAddress = await pond.getLoan(borrower.address);
+			const loan = await ContractHelper.attach("Loan", loanAddress);
 
 			const detailsBefore = await loan.getDetails();
 
-			await xUSD.approve(pond.address, repayAmount);
-			await pond.repay(repayAmount, loanAddress);
+			await xUSD.connect(borrower).approve(pond.address, repayAmount);
+			await pond.connect(borrower).repay(repayAmount, loanAddress);
 
 			const detailsAfter = await loan.getDetails();
 
@@ -248,19 +253,19 @@ describe("Testing contract Pond", function () {
 
 			const duration = 5;
 
-			const balanceBefore = await xUSD.balanceOf(signer0.address);
+			const balanceBefore = await xUSD.balanceOf(borrower.address);
 
-			await pond.borrow(amount, duration);
+			await pond.connect(borrower).borrow(amount, duration);
 
-			const balanceAfter = await xUSD.balanceOf(signer0.address);
+			const balanceAfter = await xUSD.balanceOf(borrower.address);
 
-			const loanAddress = await pond.getLoan(signer0.address);
-			const loan = await ContractHelper.attach("Loan",loanAddress);
+			const loanAddress = await pond.getLoan(borrower.address);
+			const loan = await ContractHelper.attach("Loan", loanAddress);
 
 			const detailsBefore = await loan.getDetails();
 
-			await xUSD.approve(pond.address, repayAmount);
-			await pond.repay(repayAmount, loanAddress);
+			await xUSD.connect(borrower).approve(pond.address, repayAmount);
+			await pond.connect(borrower).repay(repayAmount, loanAddress);
 
 			const detailsAfter = await loan.getDetails();
 
@@ -277,19 +282,19 @@ describe("Testing contract Pond", function () {
 
 			const duration = 5;
 
-			const balanceBefore = await xUSD.balanceOf(signer0.address);
+			const balanceBefore = await xUSD.balanceOf(borrower.address);
 
-			await pond.borrow(amount, duration);
+			await pond.connect(borrower).borrow(amount, duration);
 
-			const balanceAfter = await xUSD.balanceOf(signer0.address);
+			const balanceAfter = await xUSD.balanceOf(borrower.address);
 
-			const loanAddress = await pond.getLoan(signer0.address);
-			const loan = await ContractHelper.attach("Loan",loanAddress);
+			const loanAddress = await pond.getLoan(borrower.address);
+			const loan = await ContractHelper.attach("Loan", loanAddress);
 
 			const detailsBefore = await loan.getDetails();
 
-			await xUSD.approve(pond.address, repayAmount);
-			await pond.repay(repayAmount, loanAddress);
+			await xUSD.connect(borrower).approve(pond.address, repayAmount);
+			await pond.connect(borrower).repay(repayAmount, loanAddress);
 
 			const detailsAfter = await loan.getDetails();
 
@@ -300,17 +305,27 @@ describe("Testing contract Pond", function () {
 			expect(detailsBefore._params.amount).to.equal(amount);
 			expect(detailsBefore._params.duration.toNumber()).to.equal(duration);
 		});
+
+		it("Negative case - Reject loan if borrower is not eligible", async () => {
+			const amount = ethers.utils.parseUnits("150", "ether");
+			const duration = 5;
+
+			await registry.connect(verifier).revokeVerification(borrower.address);
+			await expect(pond.connect(borrower).borrow(amount, duration)).to.revertedWith(
+				"Growr. - Eligibility verificaiton failed"
+			);
+		});
 	});
 
 	describe("Withdraw funds", () => {
 		it("Positive case - Withdraw full deposit(not utilizied yet)", async () => {
 			const amount = ethers.utils.parseUnits("500", "ether");
 
-			const beforeWithdraw = await pond.getLenderBalance(signer0.address);
-			const beforeBalance = await xUSD.balanceOf(signer0.address);
+			const beforeWithdraw = await pond.getLenderBalance(owner.address);
+			const beforeBalance = await xUSD.balanceOf(owner.address);
 			await pond.withdraw(amount);
-			const afterWithdraw = await pond.getLenderBalance(signer0.address);
-			const afterBalance = await xUSD.balanceOf(signer0.address);
+			const afterWithdraw = await pond.getLenderBalance(owner.address);
+			const afterBalance = await xUSD.balanceOf(owner.address);
 
 			expect(beforeWithdraw).to.be.gt(afterWithdraw);
 			expect(afterWithdraw).to.equal(ethers.utils.parseUnits("0", "ether"));
@@ -336,7 +351,7 @@ describe("Testing contract Pond", function () {
 
 			const borrowAmount = ethers.utils.parseUnits("150", "ether");
 			const duration = 5;
-			await pond.borrow(borrowAmount, duration);
+			await pond.connect(borrower).borrow(borrowAmount, duration);
 
 			await expect(pond.withdraw(amount)).to.be.revertedWith(
 				"Growr. - Withdrawal amount exceeds available balance"

@@ -3,25 +3,15 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract VerificationRegistry is Ownable {
+import "../libraries/types/Types.sol";
+import "../interfaces/IVerificationRegistry.sol";
+
+contract VerificationRegistry is Ownable, IVerificationRegistry {
     // verifier address => true/false
-    mapping(address => Verifier) public getVerifier;
-    mapping(address => VerificationRecord) public getVerificationRecord;
+    mapping(address => Types.Verifier) public getVerifier;
+    mapping(address => Types.VerificationRecord) public getVerificationRecord;
 
-    uint256 verifiersCount;
-
-    struct VerificationRecord {
-        address _verifier;
-        address _object;
-        address _subject;
-        uint256 _createdAt;
-        uint256 _expiryAt;
-    }
-    struct Verifier {
-        address _verifier;
-        uint256 _createdAt;
-        bool _exists;
-    }
+    uint256 public getVerifiersCount;
 
     modifier onlyVerifier() {
         require(
@@ -32,17 +22,17 @@ contract VerificationRegistry is Ownable {
     }
 
     function addVerifier(address _verifier) public onlyOwner {
-        getVerifier[_verifier] = Verifier({
+        getVerifier[_verifier] = Types.Verifier({
             _verifier: _verifier,
             _createdAt: block.timestamp,
             _exists: true
         });
-        verifiersCount++;
+        getVerifiersCount++;
     }
 
     function removeVerifier(address _verifier) public onlyOwner {
         delete getVerifier[_verifier];
-        verifiersCount--;
+        getVerifiersCount--;
     }
 
     function registerVerification(
@@ -56,7 +46,7 @@ contract VerificationRegistry is Ownable {
         );
         require(_validity > 0, "VerificationRegistry - validity is too low");
 
-        getVerificationRecord[_object] = VerificationRecord({
+        getVerificationRecord[_object] = Types.VerificationRecord({
             _verifier: msg.sender,
             _object: _object,
             _subject: _subject,
@@ -74,11 +64,20 @@ contract VerificationRegistry is Ownable {
         delete getVerificationRecord[_object];
     }
 
-    function validateVerification(address _object) public view returns (bool) {
-        VerificationRecord memory record = getVerificationRecord[_object];
+    function validateVerification(address _object, address _subject)
+        public
+        view
+        override
+        returns (bool)
+    {
+        Types.VerificationRecord memory record = getVerificationRecord[_object];
 
         // if record exists and its not expired
-        if (record._object == _object && block.timestamp <= record._expiryAt) {
+        if (
+            record._object == _object &&
+            record._subject == _subject &&
+            block.timestamp <= record._expiryAt
+        ) {
             return true;
         }
 

@@ -11,6 +11,7 @@ import "./Pond.sol";
 import "./Loan.sol";
 import "./CredentialVerifier.sol";
 import "../libraries/types/Types.sol";
+import "../interfaces/IVerificationRegistry.sol";
 
 // import "../interfaces/IWRBTC.sol";
 
@@ -151,9 +152,8 @@ contract Pond is Ownable, CredentialVerifier {
             "Growr. - Duration exceeds max loan duration"
         );
 
-        // Get personal credentials and verify them with the pond criteria
-        // Types.PersonalCredentialsInput memory _credentials = PersonalCredentials(msg.sender);
-        bool eligible = true; //verifyCredentials(_credentials);
+        bool eligible = IVerificationRegistry(verificationRegistry)
+            .validateVerification(msg.sender, address(this));
 
         require(eligible, "Growr. - Eligibility verificaiton failed");
 

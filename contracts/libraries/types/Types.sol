@@ -73,4 +73,18 @@ library Types {
         uint256 installmentInterest;
         NextInstallment nextInstallment;
     }
+
+    struct VerificationRecord {
+        address _verifier;
+        address _object;
+        address _subject;
+        uint256 _createdAt;
+        uint256 _expiryAt;
+    }
+
+    struct Verifier {
+        address _verifier;
+        uint256 _createdAt;
+        bool _exists;
+    }
 }
