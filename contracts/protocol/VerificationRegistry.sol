@@ -36,8 +36,8 @@ contract VerificationRegistry is Ownable, IVerificationRegistry {
     }
 
     function registerVerification(
-        address _object, // the address who own the verification
-        address _subject, // the address of the target contract
+        address _subject, // the address who own the verification
+        address _object, // the address of the target contract        
         uint256 _validity // how long the verification record will last(in seconds)
     ) public onlyVerifier {
         require(
@@ -46,7 +46,7 @@ contract VerificationRegistry is Ownable, IVerificationRegistry {
         );
         require(_validity > 0, "VerificationRegistry - validity is too low");
 
-        getVerificationRecord[_object] = Types.VerificationRecord({
+        getVerificationRecord[_subject] = Types.VerificationRecord({
             _verifier: msg.sender,
             _object: _object,
             _subject: _subject,
@@ -55,22 +55,22 @@ contract VerificationRegistry is Ownable, IVerificationRegistry {
         });
     }
 
-    function revokeVerification(address _object) public onlyVerifier {
+    function revokeVerification(address _subject) public onlyVerifier {
         require(
-            getVerificationRecord[_object]._verifier == msg.sender,
+            getVerificationRecord[_subject]._verifier == msg.sender,
             "VerificationRegistry - Incorrect verifier"
         );
 
-        delete getVerificationRecord[_object];
+        delete getVerificationRecord[_subject];
     }
 
-    function validateVerification(address _object, address _subject)
+    function validateVerification(address _subject, address _object)
         public
         view
         override
         returns (bool)
     {
-        Types.VerificationRecord memory record = getVerificationRecord[_object];
+        Types.VerificationRecord memory record = getVerificationRecord[_subject];
 
         // if record exists and its not expired
         if (
