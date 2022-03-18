@@ -34,7 +34,7 @@ contract CredentialVerifier {
                 _inputCriteria.operators[i]
             );
             criteria.push(_criteria);
-            getCriteria[_inputCriteria.names[i]] = _criteria;
+            getCriteria[_inputCriteria.names[i]] = _criteria; // TODO:many criterias for one name
         }
     }
 
