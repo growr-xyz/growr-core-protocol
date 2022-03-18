@@ -9,6 +9,7 @@ import "../interfaces/IVerificationRegistry.sol";
 contract VerificationRegistry is Ownable, IVerificationRegistry {
     // verifier address => true/false
     mapping(address => Types.Verifier) public getVerifier;
+    //TODO: userAddress -> pondAddress -> record with timestamp
     mapping(address => Types.VerificationRecord) public getVerificationRecord;
 
     uint256 public getVerifiersCount;
