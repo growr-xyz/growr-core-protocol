@@ -55,7 +55,7 @@ contract Pond is Ownable, CredentialVerifier {
      */
     function getAvailableBalance() public view returns (uint256) {
         return
-            params.token.balanceOf(address(this)).sub(totalUtilized).sub(
+            params.token.balanceOf(address(this)).sub(
                 totalInterest
             );
     }
