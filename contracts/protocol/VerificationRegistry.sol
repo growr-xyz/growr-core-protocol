@@ -10,7 +10,8 @@ contract VerificationRegistry is Ownable, IVerificationRegistry {
     // verifier address => true/false
     mapping(address => Types.Verifier) public getVerifier;
     //TODO: userAddress -> pondAddress -> record with timestamp
-    mapping(address => Types.VerificationRecord) public getVerificationRecord;
+    mapping(address => mapping(address => Types.VerificationRecord))
+        public getVerificationRecord;
 
     uint256 public getVerifiersCount;
 
@@ -38,7 +39,7 @@ contract VerificationRegistry is Ownable, IVerificationRegistry {
 
     function registerVerification(
         address _subject, // the address who own the verification
-        address _object, // the address of the target contract        
+        address _object, // the address of the target contract
         uint256 _validity // how long the verification record will last(in seconds)
     ) public onlyVerifier {
         require(
@@ -47,7 +48,7 @@ contract VerificationRegistry is Ownable, IVerificationRegistry {
         );
         require(_validity > 0, "VerificationRegistry - validity is too low");
 
-        getVerificationRecord[_subject] = Types.VerificationRecord({
+        getVerificationRecord[_subject][_object] = Types.VerificationRecord({
             _verifier: msg.sender,
             _object: _object,
             _subject: _subject,
@@ -56,13 +57,16 @@ contract VerificationRegistry is Ownable, IVerificationRegistry {
         });
     }
 
-    function revokeVerification(address _subject) public onlyVerifier {
+    function revokeVerification(address _subject, address _object)
+        public
+        onlyVerifier
+    {
         require(
-            getVerificationRecord[_subject]._verifier == msg.sender,
+            getVerificationRecord[_subject][_object]._verifier == msg.sender,
             "VerificationRegistry - Incorrect verifier"
         );
 
-        delete getVerificationRecord[_subject];
+        delete getVerificationRecord[_subject][_object];
     }
 
     function validateVerification(address _subject, address _object)
@@ -71,7 +75,9 @@ contract VerificationRegistry is Ownable, IVerificationRegistry {
         override
         returns (bool)
     {
-        Types.VerificationRecord memory record = getVerificationRecord[_subject];
+        Types.VerificationRecord memory record = getVerificationRecord[
+            _subject
+        ][_object];
 
         // if record exists and its not expired
         if (

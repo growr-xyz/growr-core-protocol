@@ -59,11 +59,11 @@ describe("Testing contract VerificationRegistry", function () {
 		it("Positive case - Should register a verification", async () => {
 			await registry.connect(verifier).registerVerification(signer0.address, VALID_POND_ADDRESS, 5 * 60);
 
-			const verification = await registry.getVerificationRecord(signer0.address);
+			const verification = await registry.getVerificationRecord(signer0.address, VALID_POND_ADDRESS);
 
 			expect(verification._verifier).to.equal(verifier.address);
-			expect(verification._object).to.equal(signer0.address);
-			expect(verification._subject).to.equal(VALID_POND_ADDRESS);
+			expect(verification._object).to.equal(VALID_POND_ADDRESS);
+			expect(verification._subject).to.equal(signer0.address);
 		});
 
 		it("Positive case - Should validate a verification", async () => {
@@ -75,7 +75,7 @@ describe("Testing contract VerificationRegistry", function () {
 
 		it("Positive case - Should revoke a verification", async () => {
 			await registry.connect(verifier).registerVerification(signer0.address, VALID_POND_ADDRESS, 5 * 60);
-			await registry.connect(verifier).revokeVerification(signer0.address);
+			await registry.connect(verifier).revokeVerification(signer0.address, VALID_POND_ADDRESS);
 
 			const registered = await registry.validateVerification(signer0.address, VALID_POND_ADDRESS);
 
@@ -103,9 +103,9 @@ describe("Testing contract VerificationRegistry", function () {
 		it("Negative case - Should not revoke a verification regitered by other verifier", async () => {
 			await registry.connect(verifier).registerVerification(signer0.address, VALID_POND_ADDRESS, 5 * 60);
 
-			await expect(registry.connect(verifier2).revokeVerification(signer0.address)).to.revertedWith(
-				"VerificationRegistry - Incorrect verifier"
-			);
+			await expect(
+				registry.connect(verifier2).revokeVerification(signer0.address, VALID_POND_ADDRESS)
+			).to.revertedWith("VerificationRegistry - Incorrect verifier");
 		});
 
 		it("Negative case - Should not validate a verification with invalid subject", async () => {

@@ -310,7 +310,7 @@ describe("Testing contract Pond", function () {
 			const amount = ethers.utils.parseUnits("150", "ether");
 			const duration = 5;
 
-			await registry.connect(verifier).revokeVerification(borrower.address);
+			await registry.connect(verifier).revokeVerification(borrower.address, pond.address);
 			await expect(pond.connect(borrower).borrow(amount, duration)).to.revertedWith(
 				"Growr. - Eligibility verificaiton failed"
 			);
