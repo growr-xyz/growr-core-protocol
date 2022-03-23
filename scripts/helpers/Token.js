@@ -14,10 +14,10 @@ module.exports.deploy = async function (name, symbol) {
 
 	Token.helpers = {
 		mint: async (signer, amount) => {
-			_mint(signer, amount);
+			await _mint(signer, amount);
 		},
 		mintAndLog: async (signer, amount) => {
-			_mint(signer, amount);
+			await _mint(signer, amount);
 			console.log(`Distributed ${amount} ${symbol} to`, signer.address);
 		},
 	};
