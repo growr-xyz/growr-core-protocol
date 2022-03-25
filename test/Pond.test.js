@@ -8,14 +8,15 @@ const ContractHelper = require("../scripts/helpers/Contract");
 const { defaultParams } = require("../scripts/helpers/PondFactoryContract");
 
 describe("Testing contract Pond", function () {
-	let factory, registry, pond, xUSD, owner, verifier, borrower, signer1;
+	let factory, registry, pond, xUSD, wRBTC, owner, verifier, borrower, signer1;
 
 	beforeEach(async () => {
 		const xUSDAmount = hre.ethers.utils.parseUnits("1000", "ether");
 
 		const XUSD = await TokenHelper.deploy("xUSD Token", "XUSD");
 
-		const { VerificationRegistry, PondFactory } = await ProtocolHelper.deploy({ wrbtcAddress: null });
+		const WRBTC = await ContractHelper.deploy("WRBTC");
+		const { VerificationRegistry, PondFactory } = await ProtocolHelper.deploy({ wrbtcAddress: WRBTC.address });
 
 		registry = VerificationRegistry;
 		factory = PondFactory;
@@ -28,6 +29,7 @@ describe("Testing contract Pond", function () {
 		await XUSD.helpers.mint(signer1, xUSDAmount);
 
 		xUSD = XUSD;
+        wRBTC = WRBTC;
 
 		await PondFactory.helpers.createPond(
 			{ token: xUSD.address },

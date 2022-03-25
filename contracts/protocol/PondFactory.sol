@@ -10,6 +10,7 @@ import "../libraries/types/Types.sol";
 
 contract PondFactory {
     address public immutable verificationRegistry;
+    address public immutable WRBTC;
 
     // stores created Ponds by user
     mapping(address => Pond[]) public getUserPond;
@@ -17,8 +18,9 @@ contract PondFactory {
 
     event PondCreated(address addr, address owner, uint256 timestamp);
 
-    constructor(address _verificationRegistry) {
+    constructor(address _verificationRegistry, address _wrbtc) {
         verificationRegistry = _verificationRegistry;
+        WRBTC = _wrbtc;
     }
 
     function getAllPondsLength() external view returns (uint256) {
@@ -65,7 +67,7 @@ contract PondFactory {
             "Growr. - Invalid pond criteria"
         );
 
-        Pond pond = new Pond(verificationRegistry, _params, _criteria);
+        Pond pond = new Pond(verificationRegistry, WRBTC, _params, _criteria);
 
         getUserPond[msg.sender].push(pond);
         getPond.push(pond);

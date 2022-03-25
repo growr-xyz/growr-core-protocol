@@ -3,15 +3,17 @@ const { ethers } = require("hardhat");
 
 const ProtocolHelper = require("../scripts/helpers/Protocol");
 const TokenHelper = require("../scripts/helpers/Token");
+const ContractHelper = require("../scripts/helpers/Contract");
 
 describe("Testing contract PondFactory", function () {
-	let factory, registry, xUSD, signer0, signer1;
+	let factory, registry, xUSD, wRBTC, signer0, signer1;
 
 	beforeEach(async () => {
 		const xUSDAmount = hre.ethers.utils.parseUnits("1000", "ether");
 
-		const { VerificationRegistry, PondFactory } = await ProtocolHelper.deploy({ wrbtcAddress: null });
+		const WRBTC = await ContractHelper.deploy("WRBTC");
 		const XUSD = await TokenHelper.deploy("xUSD Token", "XUSD");
+		const { VerificationRegistry, PondFactory } = await ProtocolHelper.deploy({ wrbtcAddress: WRBTC.address });
 
 		registry = VerificationRegistry;
 		factory = PondFactory;
@@ -22,9 +24,10 @@ describe("Testing contract PondFactory", function () {
 		await XUSD.helpers.mint(signer1, xUSDAmount);
 
 		xUSD = XUSD;
+		wRBTC = WRBTC;
 	});
 
-	describe("Creating a new Pond", () => {
+	describe("Creating xUSD Pond", () => {
 		it("Positive case - Should create a pond", async () => {
 			expect(await factory.helpers.createPond({ token: xUSD.address }, {})).to.emit(factory, "PondCreated");
 
@@ -36,13 +39,10 @@ describe("Testing contract PondFactory", function () {
 		it("Positive case - Should transfer pond ownership to the caller", async () => {
 			await factory.helpers.createPond({ token: xUSD.address }, {});
 
-			const PondContract = await ethers.getContractFactory("Pond");
-
 			const userPondsLength = await factory.getUserPondsLength(signer0.address);
 			const pondAddress = await factory.getUserPond(signer0.address, userPondsLength - 1);
 
-			const pond = PondContract.attach(pondAddress);
-
+			const pond = await ContractHelper.attach("Pond", pondAddress);
 			expect(await pond.owner()).to.equal(signer0.address);
 		});
 
@@ -88,6 +88,34 @@ describe("Testing contract PondFactory", function () {
 			await expect(factory.helpers.createPond({ token: xUSD.address }, { names: [] })).to.be.revertedWith(
 				"Growr. - Invalid pond criteria"
 			);
+		});
+	});
+
+	describe("Creating WRBTC Pond", () => {
+		it("Positive case - Deposit and Withdraw RBTC", async () => {
+			const rBTCAmount = hre.ethers.utils.parseUnits("10", "ether");
+			await factory.helpers.createPond({ token: wRBTC.address }, {});
+
+			const userPondsLength = await factory.getUserPondsLength(signer0.address);
+			const pondAddress = await factory.getUserPond(signer0.address, userPondsLength - 1);
+
+			const pond = await ContractHelper.attach("Pond", pondAddress);
+			const balanceBeforeDeposit = await signer0.getBalance();
+
+			await pond.connect(signer0).depositRBTC(rBTCAmount, { value: rBTCAmount });
+
+			const pondAvailableBalance = await pond.getAvailableBalance();
+			const wrbtcPondBalance = await wRBTC.balanceOf(pond.address);
+
+			const balanceAfterDeposit = await signer0.getBalance();
+
+			await pond.withdrawRBTC(rBTCAmount);
+			// await pond.withdraw(rBTCAmount);
+            const pondAvailableBalanceAfterWitdhraw = await pond.getAvailableBalance();
+
+			expect(pondAvailableBalance).to.equal(wrbtcPondBalance);
+            expect(pondAvailableBalanceAfterWitdhraw).to.equal(0)
+			expect(balanceAfterDeposit).to.lt(balanceBeforeDeposit);
 		});
 	});
 });

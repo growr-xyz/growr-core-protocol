@@ -1,12 +1,14 @@
 const hre = require("hardhat");
 
 const ProtocolHelper = require("../helpers/Protocol");
+const ContractHelper = require("../helpers/Contract");
 
-const WRBTC_ADDRESS = "not implemented";
+// const WRBTC_ADDRESS = "not implemented";
 
 async function main() {
+	const WRBTC = await ContractHelper.deploy("WRBTC");
 	const { VerificationRegistry, PondFactory, wrbtcAddress } = await ProtocolHelper.deploy({
-		wrbtcAddress: WRBTC_ADDRESS,
+		wrbtcAddress: WRBTC.address,
 	});
 
 	console.log(`VerificationRegistry \t: ${VerificationRegistry.address}`);

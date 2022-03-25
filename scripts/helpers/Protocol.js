@@ -9,7 +9,7 @@ module.exports.deploy = async function ({ wrbtcAddress }) {
 	// }
 
 	const VerificationRegistry = await ContractHelper.deploy("VerificationRegistry");
-	const PondFactory = await PondFactoryHelper.deploy(VerificationRegistry.address);
+	const PondFactory = await PondFactoryHelper.deploy(VerificationRegistry.address, wrbtcAddress);
     
 	return { VerificationRegistry, PondFactory, wrbtcAddress };
 };

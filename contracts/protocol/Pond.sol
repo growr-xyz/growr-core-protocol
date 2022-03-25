@@ -13,14 +13,14 @@ import "./CredentialVerifier.sol";
 import "../libraries/types/Types.sol";
 import "../interfaces/IVerificationRegistry.sol";
 
-// import "../interfaces/IWRBTC.sol";
+import "../interfaces/IWRBTC.sol";
 
 contract Pond is Ownable, CredentialVerifier {
     using SafeMath for uint256;
 
     Types.PondParams private params;
 
-    // address public immutable WRBTC;
+    address public immutable WRBTC;
     address public immutable verificationRegistry;
 
     mapping(address => uint256) public getLenderBalance;
@@ -37,27 +37,64 @@ contract Pond is Ownable, CredentialVerifier {
         _;
     }
 
+    modifier wrbtcPond() {
+        require(
+            address(params.token) == WRBTC,
+            "Growr. - RBTC not supported by this Pond"
+        );
+        _;
+    }
+
     constructor(
-        // address _wrbtc,
         address _verificationRegistry,
+        address _wrbtc,
         Types.PondParams memory _params,
         Types.PondCriteriaInput memory _criteria
     ) CredentialVerifier(_criteria) {
         active = true;
         params = _params;
 
-        // WRBTC = address(0); //_wrbtc;
         verificationRegistry = _verificationRegistry;
+        WRBTC = _wrbtc;
+    }
+
+    // receives unwrapped rbtc
+    receive() external payable {}
+
+    function _deposit(uint256 _amount) private {
+        require(_amount > 0, "Growr. - Deposit amount must be more than 0");
+
+        totalDeposited = totalDeposited.add(_amount);
+        getLenderBalance[msg.sender] = getLenderBalance[msg.sender].add(
+            _amount
+        );
+    }
+
+    function _withdraw(uint256 _amount) private {
+        require(_amount > 0, "Growr. - Withdraw amount must be more than 0");
+
+        uint256 lenderBalance = getLenderBalance[msg.sender];
+        uint256 availableAmount = getAvailableBalance();
+
+        require(
+            lenderBalance > 0 && lenderBalance >= _amount,
+            "Growr. - Withdrawal amount exceeds your balance"
+        );
+        require(
+            availableAmount >= _amount,
+            "Growr. - Withdrawal amount exceeds available balance"
+        );
+
+        // reduce lender's balance and total amount of deposited funds
+        getLenderBalance[msg.sender] = lenderBalance.sub(_amount);
+        totalDeposited = totalDeposited.sub(_amount);
     }
 
     /**
         returns available balance that can be borrowed
      */
     function getAvailableBalance() public view returns (uint256) {
-        return
-            params.token.balanceOf(address(this)).sub(
-                totalInterest
-            );
+        return params.token.balanceOf(address(this)).sub(totalInterest);
     }
 
     function getDetails()
@@ -190,57 +227,35 @@ contract Pond is Ownable, CredentialVerifier {
         Deposit RBTC only if the current Pond supports it
         Wrap the native RBTC into WRBTC
      */
-    // function depositRBTC(uint256 _amount) external payable notClosed {
-    //     require(
-    //         address(params.token) == WRBTC,
-    //         "Growr. - RBTC not supported by this Pond"
-    //     );
-    //     require(_amount > 0, "Growr. - Deposit amount must be more than 0");
-    //     require(
-    //         _amount <= msg.value,
-    //         "Growr. - Deposit amount exceeds the sending amount"
-    //     );
+    function depositRBTC(uint256 _amount) external payable wrbtcPond notClosed {
+        require(
+            _amount <= msg.value,
+            "Growr. - Deposit amount exceeds the sending amount"
+        );
 
-    //     totalDeposited = totalDeposited.add(_amount);
-    //     getLenderBalance[msg.sender] = getLenderBalance[msg.sender].add(
-    //         _amount
-    //     );
+        _deposit(_amount);
 
-    //     IWRBTC(WRBTC).deposit{value: _amount}();
-    // }
+        IWRBTC(WRBTC).deposit{value: _amount}();
+    }
 
     /**
         Deposit every ERC20 token supported by the current Pond
      */
     function deposit(uint256 _amount) external notClosed {
-        require(_amount > 0, "Growr. - Deposit amount must be more than 0");
-
-        totalDeposited = totalDeposited.add(_amount);
-        getLenderBalance[msg.sender] = getLenderBalance[msg.sender].add(
-            _amount
-        );
+        _deposit(_amount);
 
         params.token.transferFrom(msg.sender, address(this), _amount);
     }
 
+    function withdrawRBTC(uint256 _amount) external wrbtcPond {
+        _withdraw(_amount);
+
+        IWRBTC(WRBTC).withdraw(_amount);
+        payable(msg.sender).transfer(_amount);
+    }
+
     function withdraw(uint256 _amount) external {
-        require(_amount > 0, "Growr. - Withdraw amount must be more than 0");
-
-        uint256 lenderBalance = getLenderBalance[msg.sender];
-        uint256 availableAmount = getAvailableBalance();
-
-        require(
-            lenderBalance > 0 && lenderBalance >= _amount,
-            "Growr. - Withdrawal amount exceeds your balance"
-        );
-        require(
-            availableAmount >= _amount,
-            "Growr. - Withdrawal amount exceeds available balance"
-        );
-
-        // reduce lender's balance and total amount of deposited funds
-        getLenderBalance[msg.sender] = lenderBalance.sub(_amount);
-        totalDeposited = totalDeposited.sub(_amount);
+        _withdraw(_amount);
 
         // TODO: withdraw interest
         // totalInterest = ??
