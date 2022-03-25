@@ -1,5 +1,6 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
+// pragma abicoder v2;
 
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -17,6 +18,7 @@ contract PondFactory {
     Pond[] public getPond;
 
     event PondCreated(address addr, address owner, uint256 timestamp);
+    // event LoanRepayed(address addr, address owner, uint256 timestamp);
 
     constructor(address _verificationRegistry, address _wrbtc) {
         verificationRegistry = _verificationRegistry;

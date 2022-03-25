@@ -7,6 +7,7 @@
 		"node:local": "npx hardhat node",
 		"script": "npx hardhat run --network localhost",
 		"script:dev:deploy-protocol": "npx hardhat run --network localhost scripts/dev/deploy-protocol.js",
+		"script:dev:deploy-and-seed": "npx hardhat run --network localhost scripts/dev/deploy-and-seed.js",
 		"script:dev:mint-tokens": "npx hardhat run --network localhost scripts/dev/mint-tokens.js",
 		"test": "npx hardhat test"
 	},
