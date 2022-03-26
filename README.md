@@ -27,9 +27,12 @@ $ npm run test
 Useful scripts
 
 ```
-Deploy and distribute X amount of xUSD & DOC Tokens to dev wallets
+Deploy protocol with initial data
+$ npm run script:dev:deploy-and-seed
+
+Manual deploy
 $ npm run script:dev:mint-tokens
 
-Deploy contracts
+Deploy contracts only
 $ npm run script:dev:deploy-protocol
 ```

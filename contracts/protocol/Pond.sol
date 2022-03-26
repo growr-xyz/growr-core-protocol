@@ -32,6 +32,13 @@ contract Pond is Ownable, CredentialVerifier {
 
     bool public active;
 
+    event RepayLoan(
+        address indexed addr,
+        address indexed sender,
+        uint256 amount,
+        uint256 timestamp
+    );
+
     modifier notClosed() {
         require(active, "Growr. - Pond is not active anymore");
         _;
@@ -221,6 +228,8 @@ contract Pond is Ownable, CredentialVerifier {
         totalInterest = totalInterest.add(interest);
 
         params.token.transferFrom(msg.sender, address(this), _amount);
+
+        emit RepayLoan(address(loan), msg.sender, _amount, block.timestamp);
     }
 
     /**

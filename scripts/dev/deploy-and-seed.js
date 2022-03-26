@@ -52,6 +52,9 @@ async function main() {
 	console.log(`PondFactory \t\t: ${PondFactory.address}`);
 	console.log(`WRBTC \t\t\t: ${wrbtcAddress}`);
 	console.log(`XUSD \t\t\t: ${xUSD.address}`);
+	console.log(`Created 2 Ponds`);
+	console.log(`Pond1\t\t\t: ${Pond1.address}`);
+	console.log(`Pond2\t\t\t: ${Pond2.address}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

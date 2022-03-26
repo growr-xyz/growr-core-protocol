@@ -18,7 +18,6 @@ contract PondFactory {
     Pond[] public getPond;
 
     event PondCreated(address addr, address owner, uint256 timestamp);
-    // event LoanRepayed(address addr, address owner, uint256 timestamp);
 
     constructor(address _verificationRegistry, address _wrbtc) {
         verificationRegistry = _verificationRegistry;
