@@ -47,6 +47,8 @@ async function main() {
 	await Pond2.connect(investor).deposit(ethers.utils.parseUnits("1000", "ether"));
 
 	await VerificationRegistry.connect(owner).addVerifier(owner.address);
+	// GET address FROM Accounts generated from the node and use the same to connect in metamask
+	await VerificationRegistry.connect(owner).addVerifier("0xdd2fd4581271e230360230f9337d5c0430bf44c0");
 
 	console.log(`VerificationRegistry \t: ${VerificationRegistry.address}`);
 	console.log(`PondFactory \t\t: ${PondFactory.address}`);
