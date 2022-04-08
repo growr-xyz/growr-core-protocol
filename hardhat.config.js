@@ -25,15 +25,16 @@ module.exports = {
 	defaultNetwork: "localhost",
 	networks: {
 		hardhat: {
-			// mining: {
-			// 	auto: true,
-			// 	interval: 1,
-			// },
 		},
 		localhost: {
 			url: "http://localhost:8545",
 			chainId: 31337,
 		},
+		rskTestNet: {
+			url: "https://public-node.testnet.rsk.co",
+			chainId: 31,
+			accounts: ["private key"] // Replace with your private key here
+		}
 	},
 	mocha: {
 		timeout: 40000,

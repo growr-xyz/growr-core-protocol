@@ -2,7 +2,7 @@ const hre = require("hardhat");
 
 const ProtocolHelper = require("../helpers/Protocol");
 
-const WRBTC_ADDRESS = null;
+const WRBTC_ADDRESS = "";
 
 async function main() {
 	const { VerificationRegistry, PondFactory, wrbtcAddress } = await ProtocolHelper.deploy({

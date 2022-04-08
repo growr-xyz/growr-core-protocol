@@ -2,7 +2,7 @@
 
 Repo for the smart contracts
 
-#### Development
+### Development
 
 Clone the repository and install all dependencies
 
@@ -24,7 +24,7 @@ Run sanity check
 $ npm run test
 ```
 
-Useful scripts
+### Useful scripts (localhost)
 
 ```
 Deploy protocol with initial data
@@ -35,4 +35,16 @@ $ npm run script:dev:mint-tokens
 
 Deploy contracts only
 $ npm run script:dev:deploy-protocol
+```
+
+### Useful scripts (RSK TestNet)
+```
+Configure private key in hardhat.config.js: networks.rskTestNet.accounts
+
+Deploy protocol on RSK TestNet
+$ npx hardhat run --network rskTestNet scripts/dev/deploy-protocol.js
+
+Create tokens
+$ npx hardhat run --network rskTestNet scripts/dev/mint-tokens.js
+
 ```
