@@ -22,6 +22,7 @@ contract Pond is Ownable, CredentialVerifier {
 
     address public immutable WRBTC;
     address public immutable verificationRegistry;
+    address public immutable factory;
 
     mapping(address => uint256) public getLenderBalance;
     mapping(address => Loan) public getLoan;
@@ -38,6 +39,11 @@ contract Pond is Ownable, CredentialVerifier {
         uint256 amount,
         uint256 timestamp
     );
+
+    modifier onlyFactory() {
+        require(msg.sender == factory, "Growr. - Access denied");
+        _;
+    }
 
     modifier notClosed() {
         require(active, "Growr. - Pond is not active anymore");
@@ -61,6 +67,7 @@ contract Pond is Ownable, CredentialVerifier {
         active = true;
         params = _params;
 
+        factory = msg.sender;
         verificationRegistry = _verificationRegistry;
         WRBTC = _wrbtc;
     }
@@ -127,7 +134,7 @@ contract Pond is Ownable, CredentialVerifier {
         uint256 _amount,
         uint256 _duration,
         Types.PersonalCredentialsInput memory _credentials
-    ) external view notClosed returns (Types.LoanOffer memory _loan) {
+    ) external view returns (Types.LoanOffer memory _loan) {
         uint256 amount = _amount;
         uint256 duration = _duration;
 
@@ -141,7 +148,11 @@ contract Pond is Ownable, CredentialVerifier {
         else if (duration > params.maxLoanDuration)
             duration = params.maxLoanDuration;
 
-        bool eligible = verifyCredentials(_credentials);
+        bool eligible = false;
+        // check credentials only if the pond is still active
+        if (active) {
+            eligible = verifyCredentials(_credentials);
+        }
 
         // check available balance
         uint256 balance = getAvailableBalance();
@@ -174,7 +185,7 @@ contract Pond is Ownable, CredentialVerifier {
         return _loan;
     }
 
-    function borrow(uint256 _amount, uint256 _duration) public {
+    function borrow(uint256 _amount, uint256 _duration) public notClosed {
         require(
             _amount >= params.minLoanAmount,
             "Growr.- Amount is less than min loan amount"
@@ -270,5 +281,26 @@ contract Pond is Ownable, CredentialVerifier {
         // totalInterest = ??
 
         params.token.transfer(msg.sender, _amount);
+    }
+
+    function deactivate() public onlyOwner notClosed {
+        active = false;
+    }
+
+    function destroy() public onlyFactory {
+        require(tx.origin == owner(), "Growr. - Access denied");
+        require(
+            totalDeposited == 0,
+            "Growr. - Pond cannot be destroyed due to active deposits"
+        );
+        require(
+            totalUtilized == 0,
+            "Growr. - Pond cannot be destroyed due to active loans"
+        );
+
+        // TODO: check for interest
+        // totalInterest = ??
+
+        selfdestruct(payable(address(owner())));
     }
 }
