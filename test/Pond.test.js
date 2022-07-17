@@ -377,13 +377,29 @@ describe("Testing contract Pond", function () {
 
 			expect(offer.approved).to.equal(false);
 		});
-        
+
 		it("Negative case - Deactivate already deactivated pond", async () => {
 			await pond.connect(owner).deactivate();
-			
-            await expect(pond.connect(owner).deactivate()).to.be.revertedWith(
+
+			await expect(pond.connect(owner).deactivate()).to.be.revertedWith(
 				"Growr. - Pond is not active anymore"
 			);
 		});
+
+		it("Positive case - activate inactive pond", async () => {
+			await pond.connect(owner).activate();
+
+			const isActive = await pond.active();
+			expect(isActive).to.equal(true);
+		});
+
+		it("Negative case - Try to activate already active pond", async () => {
+			await pond.connect(owner).activate();
+
+			await expect(pond.connect(owner).activate()).to.be.revertedWith(
+				"Growr. - Pond is already active"
+			);
+		});
+
 	});
 });

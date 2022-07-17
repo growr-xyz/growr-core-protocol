@@ -287,6 +287,10 @@ contract Pond is Ownable, CredentialVerifier {
         active = false;
     }
 
+    function activate() public onlyOwner notClosed {
+        active = true;
+    }
+
     function destroy() public onlyFactory {
         require(tx.origin == owner(), "Growr. - Access denied");
         require(
