@@ -34,6 +34,11 @@ module.exports = {
 			url: "http://localhost:8545",
 			chainId: 31337,
 		},
+		rskTestNet: {
+			url: "https://public-node.testnet.rsk.co",
+			chainId: 31,
+			accounts: [""] // Replace with your private key here
+		}
 	},
 	mocha: {
 		timeout: 40000,
