@@ -119,10 +119,11 @@ contract Pond is Ownable, CredentialVerifier {
             Types.PondCriteria[] memory _criteria,
             uint256 _totalDeposited,
             uint256 _totalUtilized,
-            uint256 _totalInterest
+            uint256 _totalInterest,
+            bool _active
         )
     {
-        return (params, criteria, totalDeposited, totalUtilized, totalInterest);
+        return (params, criteria, totalDeposited, totalUtilized, totalInterest, active);
     }
 
     /**
