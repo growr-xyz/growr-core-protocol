@@ -111,11 +111,55 @@ describe("Testing contract PondFactory", function () {
 
 			await pond.withdrawRBTC(rBTCAmount);
 			// await pond.withdraw(rBTCAmount);
-            const pondAvailableBalanceAfterWitdhraw = await pond.getAvailableBalance();
+			const pondAvailableBalanceAfterWitdhraw = await pond.getAvailableBalance();
 
 			expect(pondAvailableBalance).to.equal(wrbtcPondBalance);
-            expect(pondAvailableBalanceAfterWitdhraw).to.equal(0)
+			expect(pondAvailableBalanceAfterWitdhraw).to.equal(0);
 			expect(balanceAfterDeposit).to.lt(balanceBeforeDeposit);
+		});
+	});
+
+	describe("Destroy a Pond", () => {
+		it("Positive case - Destroy empty pond", async () => {
+			await factory.helpers.createPond({ token: xUSD.address }, {});
+
+			const userPondAddress = await factory.getUserPond(signer0.address, 0);
+			const pondAddress = await factory.getPond(0);
+
+			await factory.destroyPond(userPondAddress);
+
+			const destroyedUserPondAddress = await factory.getUserPond(signer0.address, 0);
+			const destroyedPondAddress = await factory.getPond(0);
+
+			expect(pondAddress != destroyedPondAddress).to.equal(true);
+			expect(userPondAddress != destroyedUserPondAddress).to.equal(true);
+			expect(destroyedUserPondAddress).to.equal("0x0000000000000000000000000000000000000000");
+			expect(destroyedPondAddress).to.equal("0x0000000000000000000000000000000000000000");
+		});
+
+		it("Negative case - Destroy pond created by another user", async () => {
+			await factory.helpers.createPond({ token: xUSD.address }, {});
+			await factory.helpers.createPond({ token: xUSD.address }, {});
+
+			const pondAddress = await factory.getUserPond(signer0.address, 0);
+
+			expect(factory.connect(signer1).destroyPond(pondAddress)).to.throw
+		});
+
+		it("Negative case - Destroy pond with active funds", async () => {
+			const amount = hre.ethers.utils.parseUnits("10", "ether");
+
+			await factory.helpers.createPond({ token: xUSD.address }, {});
+
+			const pondAddress = await factory.getUserPond(signer0.address, 0);
+			const pond = await ContractHelper.attach("Pond", pondAddress);
+
+			await xUSD.connect(signer0).approve(pondAddress, amount);
+			await pond.connect(signer0).deposit(amount);
+
+			await expect(factory.destroyPond(pondAddress)).to.be.revertedWith(
+				"Growr. - Pond cannot be destroyed due to active deposits"
+			);
 		});
 	});
 });
