@@ -284,16 +284,17 @@ contract Pond is Ownable, CredentialVerifier {
         params.token.transfer(msg.sender, _amount);
     }
 
-    function deactivate() public onlyOwner notClosed {
+    function deactivate() public onlyOwner {
         active = false;
     }
 
-    function activate() public onlyOwner notClosed {
+    function activate() public onlyOwner {
         active = true;
     }
 
-    function destroy() public onlyFactory {
-        require(tx.origin == owner(), "Growr. - Access denied");
+    //function destroy() public onlyFactory {
+    function destroy() public onlyOwner {
+        //require(tx.origin == owner(), "Growr. - Access denied");
         require(
             totalDeposited == 0,
             "Growr. - Pond cannot be destroyed due to active deposits"
