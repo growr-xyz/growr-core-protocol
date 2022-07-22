@@ -33,7 +33,7 @@ module.exports = {
 		rskTestNet: {
 			url: "https://public-node.testnet.rsk.co",
 			chainId: 31,
-			accounts: ["private key"] // Replace with your private key here
+			accounts: [""] // Replace with your private key here
 		}
 	},
 	mocha: {

@@ -29,7 +29,7 @@ describe("Testing contract Pond", function () {
 		await XUSD.helpers.mint(signer1, xUSDAmount);
 
 		xUSD = XUSD;
-        wRBTC = WRBTC;
+		wRBTC = WRBTC;
 
 		await PondFactory.helpers.createPond(
 			{ token: xUSD.address },
@@ -359,5 +359,47 @@ describe("Testing contract Pond", function () {
 				"Growr. - Withdrawal amount exceeds available balance"
 			);
 		});
+	});
+
+	describe("Deactivate a pond", () => {
+		it("Positive case - deactivate active pond", async () => {
+			await pond.connect(owner).deactivate();
+
+			const isActive = await pond.active();
+			expect(isActive).to.equal(false);
+		});
+
+		it("Positive case - loan offer should be rejected", async () => {
+			const amount = ethers.utils.parseUnits("150", "ether");
+			await pond.connect(owner).deactivate();
+
+			const offer = await pond.getLoanOffer(amount, 10, { names: [], contents: [] });
+
+			expect(offer.approved).to.equal(false);
+		});
+
+		it("Negative case - Deactivate already deactivated pond", async () => {
+			await pond.connect(owner).deactivate();
+
+			await expect(pond.connect(owner).deactivate()).to.be.revertedWith(
+				"Growr. - Pond is not active anymore"
+			);
+		});
+
+		it("Positive case - activate inactive pond", async () => {
+			await pond.connect(owner).activate();
+
+			const isActive = await pond.active();
+			expect(isActive).to.equal(true);
+		});
+
+		it("Negative case - Try to activate already active pond", async () => {
+			await pond.connect(owner).activate();
+
+			await expect(pond.connect(owner).activate()).to.be.revertedWith(
+				"Growr. - Pond is already active"
+			);
+		});
+
 	});
 });

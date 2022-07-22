@@ -13,8 +13,13 @@ contract PondFactory {
     address public immutable verificationRegistry;
     address public immutable WRBTC;
 
+    // user => pond => id
+    mapping(address => mapping(address => uint)) public getUserPondId;
     // stores created Ponds by user
     mapping(address => Pond[]) public getUserPond;
+    // pond => id
+    mapping(address => uint) public getPondId;
+    // stores all ponds
     Pond[] public getPond;
 
     event PondCreated(address addr, address owner, uint256 timestamp);
@@ -70,11 +75,38 @@ contract PondFactory {
 
         Pond pond = new Pond(verificationRegistry, WRBTC, _params, _criteria);
 
-        getUserPond[msg.sender].push(pond);
+        address pondAddress = address(pond);
+
         getPond.push(pond);
+        getPondId[pondAddress] = getPond.length - 1;
+        getUserPond[msg.sender].push(pond);
+        getUserPondId[msg.sender][pondAddress] =
+            getUserPond[msg.sender].length -
+            1;
 
         pond.transferOwnership(msg.sender);
 
-        emit PondCreated(address(pond), msg.sender, block.timestamp);
+        emit PondCreated(pondAddress, msg.sender, block.timestamp);
+    }
+
+    function destroyPond(address pondAddress) external {
+        uint userPondId = getUserPondId[msg.sender][pondAddress];
+        uint pondId = getPondId[pondAddress];
+
+        Pond pond = getPond[pondId];
+        Pond userPond = getUserPond[msg.sender][userPondId];
+
+        require(address(pond) == pondAddress, "Growr. - Pond does not exists");
+        require(
+            address(userPond) == pondAddress,
+            "Growr. - Pond does not exists"
+        );
+
+        pond.destroy();
+
+        delete getPond[pondId];
+        delete getPondId[pondAddress];
+        delete getUserPond[msg.sender][userPondId];
+        delete getUserPondId[msg.sender][pondAddress];
     }
 }
