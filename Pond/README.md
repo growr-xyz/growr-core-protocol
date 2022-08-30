@@ -1,6 +1,4 @@
-# growr-core-protocol
-
-Repo for the smart contracts
+Repo for the **Pond** smart contracts
 
 #### Development
 
