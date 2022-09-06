@@ -3,7 +3,7 @@ const { expect } = require("chai");
 const { attach, deployFactory, createProject } = require("../scripts/helpers/Protocol");
 
 
-describe("ProjectFactory", function () {
+describe("ProjectFactory.sol", function () {
 	let Factory, deployerAccount, otherAccount1;
 
 	this.beforeAll(async () => {
