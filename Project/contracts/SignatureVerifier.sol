@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-contract SignatureVerifier {
+library SignatureVerifier {
 
     function verifySigner(
         address _signer,
