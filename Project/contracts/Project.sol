@@ -5,8 +5,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./lib/TypesLib.sol";
 import "./SignatureVerifier.sol";
+import "./CredentialVerifier.sol";
 
-contract Project is Ownable, SignatureVerifier  {
+contract Project is Ownable, SignatureVerifier, CredentialVerifier  {
     
     address public factory;
     bool public active;
@@ -14,7 +15,6 @@ contract Project is Ownable, SignatureVerifier  {
     mapping(address => bool) public verificators;
     
     TypesLib.ProjectParams public project;
-    TypesLib.ProjectCriteria private criteria;
 
     modifier onlyFactory() {
         require(msg.sender == factory,
@@ -29,10 +29,9 @@ contract Project is Ownable, SignatureVerifier  {
 
     constructor(
         TypesLib.ProjectParams memory _project,
-        TypesLib.ProjectCriteria memory _criteria
-    ) {
+        TypesLib.ProjectCriteriaInput memory _criteria
+    ) CredentialVerifier(_criteria) {
         project = _project;
-        criteria = _criteria;
 
         factory = msg.sender;
         active = true;

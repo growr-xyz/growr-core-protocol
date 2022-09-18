@@ -14,10 +14,23 @@ library TypesLib {
         uint gracePeriod;
     }
 
-    struct ProjectCriteria {
+     struct ProjectCriteria {
+        bool _exists;
+        string _name;
+        string _type;
+        string _content;
+        string _operator;
+    }
+
+    struct ProjectCriteriaInput {
         string[] names;
         string[] types;
         string[] contents;
         string[] operators;
+    }
+    
+    struct PersonalCredentialsInput {
+        string[] names;
+        string[] contents;
     }
 }

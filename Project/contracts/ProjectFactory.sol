@@ -19,7 +19,7 @@ contract ProjectFactory {
 
     function createProject(
         TypesLib.ProjectParams memory _params,
-        TypesLib.ProjectCriteria memory _criteria
+        TypesLib.ProjectCriteriaInput memory _criteria
     ) external {
         require(bytes(_params.name).length > 0, "Growr. - Invalid project name");
         require(
