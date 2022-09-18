@@ -10,8 +10,8 @@ contract ProjectFactory {
     mapping(address => Project[]) public getProjects;
     mapping(Project => uint) public getProjectIndex;
 
-    event ProjectCreated(address projectAddress, string projectId, address projectOwner);
-    event ProjectStatusChanged(address projectAddress, bool active);
+    event ProjectCreated(address indexed projectAddress, string projectId, address projectOwner);
+    event ProjectStatusChanged(address indexed projectAddress, bool active);
 
     function getProjectsLength(address _owner) external view returns (uint numberOfProjects) {
         numberOfProjects = getProjects[_owner].length;
