@@ -21,13 +21,13 @@ contract ProjectFactory {
         TypesLib.ProjectParams memory _params,
         TypesLib.ProjectCriteria memory _criteria
     ) external {
-        require(bytes(_params.name).length > 0, "Agrifin - Invalid project name");
+        require(bytes(_params.name).length > 0, "Growr. - Invalid project name");
         require(
             _criteria.names.length > 0 &&
                 _criteria.types.length == _criteria.names.length &&
                 _criteria.contents.length == _criteria.names.length &&
                 _criteria.operators.length == _criteria.names.length,
-            "Agrifin - Invalid project criteria"
+            "Growr. - Invalid project criteria"
         );
 
         Project project = new Project(_params, _criteria);
@@ -43,7 +43,7 @@ contract ProjectFactory {
     function changeProjectStatus(address projectAddress, bool active) external {
         Project project = Project(projectAddress);
 
-        require(project.owner() == msg.sender, "Agrifin - Caller is not the owner");
+        require(project.owner() == msg.sender, "Growr. - Caller is not the owner");
 
         if (active) {
             project.activate();

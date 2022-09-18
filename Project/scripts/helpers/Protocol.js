@@ -32,7 +32,12 @@ async function createProject(factory, params = {}, criteria = {}) {
 	params = { ...defaultParams, ...params };
 	criteria = { ...defaultCriteria, ...criteria };
 
-	return await factory.createProject(params, criteria);
+	const tx = await factory.createProject(params, criteria);
+	const receipt = await tx.wait();
+
+	const args = receipt.events.filter((e) => e.event === "ProjectCreated")[0].args;
+
+	return await attach("Project", args.projectAddress);
 }
 
 module.exports = {

@@ -4,17 +4,26 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./lib/TypesLib.sol";
+import "./SignatureVerifier.sol";
 
-contract Project is Ownable {
+contract Project is Ownable, SignatureVerifier  {
     
     address public factory;
     bool public active;
+
+    mapping(address => bool) public verificators;
     
     TypesLib.ProjectParams public project;
     TypesLib.ProjectCriteria private criteria;
 
     modifier onlyFactory() {
-        require(msg.sender == factory, "Agrifin - caller is not the factory");
+        require(msg.sender == factory,
+        "Growr. - caller is not the factory");
+        _;
+    }
+
+    modifier notDeactivated() {
+        require(active == true, "Growr. - project is deactivated");
         _;
     }
 
@@ -26,6 +35,7 @@ contract Project is Ownable {
         criteria = _criteria;
 
         factory = msg.sender;
+        active = true;
     }
 
     function activate() onlyFactory external {
@@ -35,4 +45,13 @@ contract Project is Ownable {
     function deactivate() onlyFactory external {
         active = false;
     }
+
+    function addVerificator(address _verificator) external onlyOwner notDeactivated {
+        verificators[_verificator] = true;
+    }
+
+    function removeVerificator(address _verificator) external onlyOwner notDeactivated {
+        verificators[_verificator] = false;
+    }
+
 }
