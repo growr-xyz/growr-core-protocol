@@ -53,4 +53,8 @@ contract Project is Ownable, SignatureVerifier, CredentialVerifier  {
         verificators[_verificator] = false;
     }
 
+    function setProjectCriteria(TypesLib.ProjectCriteriaInput memory _criteria) external onlyOwner {
+        _setCriteria(_criteria);
+    }
+
 }

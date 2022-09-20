@@ -7,18 +7,11 @@ import "./lib/StringUtils.sol";
 contract CredentialVerifier {
     using StringUtils for string;
 
-    mapping(string => TypesLib.ProjectCriteria) internal getCriteria;
-    TypesLib.ProjectCriteria[] public criteria;
+    mapping(string => TypesLib.ProjectCriteria) internal getCriteriaByName;
+    TypesLib.ProjectCriteria[] internal criteria;
 
     constructor(TypesLib.ProjectCriteriaInput memory _inputCriteria) {
-        require(
-            _inputCriteria.types.length == _inputCriteria.names.length &&
-                _inputCriteria.contents.length == _inputCriteria.names.length &&
-                _inputCriteria.operators.length == _inputCriteria.names.length,
-            "Growr. - Invalid pond criteria"
-        );
-
-        _parseInputCriteria(_inputCriteria);
+        _setCriteria(_inputCriteria);
     }
 
     function _parseInputCriteria(TypesLib.ProjectCriteriaInput memory _inputCriteria)
@@ -33,7 +26,7 @@ contract CredentialVerifier {
                 _inputCriteria.operators[i]
             );
             criteria.push(_criteria);
-            getCriteria[_inputCriteria.names[i]] = _criteria; // TODO:many criterias for one name
+            getCriteriaByName[_inputCriteria.names[i]] = _criteria; // TODO:many criterias for one name
         }
     }
 
@@ -41,7 +34,7 @@ contract CredentialVerifier {
         string memory inputName,
         string memory inputValue
     ) private view returns (bool) {
-        TypesLib.ProjectCriteria memory _criteria = getCriteria[inputName];
+        TypesLib.ProjectCriteria memory _criteria = getCriteriaByName[inputName];
 
         if (!_criteria._exists) return false;
 
@@ -71,9 +64,20 @@ contract CredentialVerifier {
         return false;
     }
 
+    function _setCriteria(TypesLib.ProjectCriteriaInput memory _inputCriteria) internal {
+        require(
+            _inputCriteria.types.length == _inputCriteria.names.length &&
+                _inputCriteria.contents.length == _inputCriteria.names.length &&
+                _inputCriteria.operators.length == _inputCriteria.names.length,
+            "Growr. - Invalid pond criteria"
+        );
+
+        _parseInputCriteria(_inputCriteria);
+    }
+
     function verifyCredentials(
         TypesLib.PersonalCredentialsInput memory _credentials
-    ) public view returns (bool) {
+    ) internal view returns (bool) {
         if (_credentials.names.length != _credentials.contents.length) {
             return false;
         }
@@ -91,13 +95,17 @@ contract CredentialVerifier {
         return verified;
     }
 
-    function getCriteriaNames() public view returns (string[] memory) {
-        string[] memory names = new string[](criteria.length);
-
-        for (uint256 index = 0; index < criteria.length; index++) {
-            names[index] = criteria[index]._name;
-        }
-
-        return names;
+    function getProjectCriteria() external view returns(TypesLib.ProjectCriteria[] memory) {
+        return criteria;
     }
+
+    // function getCriteriaNames() public view returns (string[] memory) {
+    //     string[] memory names = new string[](criteria.length);
+
+    //     for (uint256 index = 0; index < criteria.length; index++) {
+    //         names[index] = criteria[index]._name;
+    //     }
+
+    //     return names;
+    // }
 }

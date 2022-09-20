@@ -1,6 +1,6 @@
 const { expect } = require("chai");
 
-const { deployFactory, createProject } = require("../scripts/helpers/Protocol");
+const { deployFactory, createProject, defaultCriteria } = require("../scripts/helpers/Protocol");
 
 describe.only("Project.sol", function () {
 	let Factory, Project, ownerAccount, verificatorAccount, otherAccount;
@@ -68,6 +68,20 @@ describe.only("Project.sol", function () {
 				await expect(Project.removeVerificator(verificatorAccount.address)).to.be.revertedWith(
 					"Growr. - project is deactivated"
 				);
+			});
+		});
+	});
+
+	describe("Criteria", () => {
+		it("Should match the default criteria", async () => {
+			const criteria = await Project.getProjectCriteria();
+
+			criteria.forEach((crit, i) => {
+				expect(crit._exists).to.be.true;
+				expect(crit._name).to.be.equal(defaultCriteria.names[i]);
+				expect(crit._type).to.be.equal(defaultCriteria.types[i]);
+				expect(crit._content).to.be.equal(defaultCriteria.contents[i]);
+				expect(crit._operator).to.be.equal(defaultCriteria.operators[i]);
 			});
 		});
 	});
