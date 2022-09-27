@@ -23,16 +23,22 @@ contract SignatureVerifier {
         verified = _signer == recoveredSigner; 
     }
 
-    function recoverVerificatorAddress(bytes memory _borrowerSignature, bytes memory _verificatorSignature) external pure returns(address) {
-        bytes32 hash = keccak256(abi.encodePacked(_borrowerSignature));
+    function recoverVerificatorAddress(address _borrower, uint _amount, uint _docId, bytes memory _signature) external pure returns(address) {
+        bytes32 hash = keccak256(abi.encodePacked(_borrower, _amount, _docId));
 
-        return recoverSigner(hash, _verificatorSignature);
+        return recoverSigner(hash, _signature);
     }
 
-    function verifyBorrowerSignature(uint _amount, uint _docId, address _borrower, bytes memory _signature) external pure returns(bool) {
-        bytes32 hash = keccak256(abi.encodePacked(_amount, _docId));
+    function recoverBorrowerAddress(bytes memory _borrowerSignature, bytes memory _verificatorSignature) external pure returns(address) {
+        bytes32 hash = keccak256(abi.encodePacked(_verificatorSignature));
 
-        return verifySigner(_borrower, hash, _signature);
+        return recoverSigner(hash, _borrowerSignature);
+    }
+
+    function verifyBorrowerSignature(address _borrower, bytes memory _borrowerSignature, bytes memory _verificatorSignature) external pure returns(bool) {
+        bytes32 hash = keccak256(abi.encodePacked(_verificatorSignature));
+
+        return verifySigner(_borrower, hash, _borrowerSignature);
     }
 
     function _getEthSignedMessageHash(bytes32 _hash) internal pure returns(bytes32) {

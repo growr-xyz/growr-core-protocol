@@ -33,4 +33,29 @@ library TypesLib {
         string[] names;
         string[] contents;
     }
+
+    struct Loan {
+        address borrower;
+        uint amount;
+        uint loanId;
+        uint docId;
+        uint createdAt;
+        LoanStatus status;
+    }
+
+    struct Verificator {
+        bool hasCredentialAccess;
+        bool hasPaymentAccess;
+    }
+    enum LoanStatus {
+        CREATED,
+        DISBURSED,
+        CANCELED,
+        REPAYED
+    }
+
+    enum VerificatorType {
+        CREDENTIAL,
+        PAYMENT
+    }
 }

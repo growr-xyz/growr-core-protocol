@@ -30,13 +30,18 @@ describe("SignatureVerifier.sol", function () {
 				const amount = 500;
 				const docId = 1;
 
-				const signature = await getBorrowerSignature(borrowerAccount, amount, docId);
+				const verificatorSignature = await getVerificatorSignature(
+					verificatorAccount,
+					borrowerAccount.address,
+					amount,
+					docId
+				);
+				const borrowerSignature = await getBorrowerSignature(borrowerAccount, verificatorSignature);
 
 				const verified = await Verifier.verifyBorrowerSignature(
-					amount,
-					docId,
 					borrowerAccount.address,
-					signature
+					borrowerSignature,
+					verificatorSignature
 				);
 
 				expect(verified).to.be.true;
@@ -46,10 +51,19 @@ describe("SignatureVerifier.sol", function () {
 				const amount = 500;
 				const docId = 1;
 
-				const borrowerSignature = await getBorrowerSignature(borrowerAccount, amount, docId);
-				const verificatorSignature = await getVerificatorSignature(verificatorAccount, borrowerSignature);
+				const verificatorSignature = await getVerificatorSignature(
+					verificatorAccount,
+					borrowerAccount.address,
+					amount,
+					docId
+				);
 
-				const verificator = await Verifier.recoverVerificatorAddress(borrowerSignature, verificatorSignature);
+				const verificator = await Verifier.recoverVerificatorAddress(
+					borrowerAccount.address,
+					amount,
+					docId,
+					verificatorSignature
+				);
 
 				expect(verificator).to.be.equal(verificatorAccount.address);
 			});

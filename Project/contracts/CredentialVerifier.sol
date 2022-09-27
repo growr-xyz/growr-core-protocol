@@ -69,7 +69,7 @@ contract CredentialVerifier {
             _inputCriteria.types.length == _inputCriteria.names.length &&
                 _inputCriteria.contents.length == _inputCriteria.names.length &&
                 _inputCriteria.operators.length == _inputCriteria.names.length,
-            "Growr. - Invalid pond criteria"
+            "Growr. - Invalid project criteria"
         );
 
         _parseInputCriteria(_inputCriteria);
