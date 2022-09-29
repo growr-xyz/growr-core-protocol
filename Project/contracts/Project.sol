@@ -74,6 +74,14 @@ contract Project is Ownable, SignatureVerifier, CredentialVerifier  {
         active = true;
     }
 
+    function getLoans(uint[] memory _ids) internal view returns (TypesLib.Loan[] memory _loans) {
+        _loans = new TypesLib.Loan[](_ids.length);
+
+        for (uint i = 0; i < _ids.length; i++) {
+            _loans[i] = getLoanById[_ids[i]];
+        }
+    }
+
     function changeLoanStatus(uint _docId, TypesLib.LoanStatus _status) private {
         uint[] memory loanIds = getLoanIdsByDocId[_docId];
 
@@ -124,33 +132,15 @@ contract Project is Ownable, SignatureVerifier, CredentialVerifier  {
         
     }
 
-    function getBorrowerLoansCount(address _borrower) external view returns(uint) {
+    function getLoansCountByBorrower(address _borrower) public view returns(uint) {
         return getLoanIdsByBorrower[_borrower].length;
     }
 
-    function getLoansByBorrower(address _borrower) external view returns(TypesLib.Loan[] memory _loans) {
-        ValidatorLib.requireNonZeroAddress(_borrower);
-
-        uint[] memory loanIds = getLoanIdsByBorrower[_borrower];
-
-        _loans = new TypesLib.Loan[](loanIds.length);
-
-        for (uint i = 0; i < loanIds.length; i++) {
-            _loans[i] = getLoanById[loanIds[i]];
-        }
+    function getLoansCountByDocument(uint _docId) public view returns(uint) {
+        return getLoanIdsByDocId[_docId].length;
     }
 
-    function getLoansByDocument(uint _docId) external view returns(TypesLib.Loan[] memory _loans) {
-        uint[] memory loanIds = getLoanIdsByDocId[_docId];
-
-        _loans = new TypesLib.Loan[](loanIds.length);
-
-        for (uint i = 0; i < loanIds.length; i++) {
-            _loans[i] = getLoanById[loanIds[i]];
-        }
-    }
-
-    function getLoansByStatus(TypesLib.LoanStatus _status) external view  returns(TypesLib.Loan[] memory _loans) {
+    function getLoansCountByStatus(TypesLib.LoanStatus _status) public view returns(uint) {
         uint loanIds = 0;
         for (uint loanId = 0; loanId < getLoanById.length; loanId++) {
             TypesLib.Loan memory loan = getLoanById[loanId];
@@ -159,9 +149,30 @@ contract Project is Ownable, SignatureVerifier, CredentialVerifier  {
             loanIds++;
         }
 
-        _loans = new TypesLib.Loan[](loanIds);
+        return loanIds;
+    }
 
-        for (uint id = 0; id < loanIds; id++) {
+    function getLoansByBorrower(address _borrower) external view returns(TypesLib.Loan[] memory _loans) {
+        ValidatorLib.requireNonZeroAddress(_borrower);
+
+        uint[] memory loanIds = getLoanIdsByBorrower[_borrower];
+
+        _loans = getLoans(loanIds);
+    }
+
+    function getLoansByDocument(uint _docId) external view returns(TypesLib.Loan[] memory _loans) {
+        uint[] memory loanIds = getLoanIdsByDocId[_docId];
+
+        _loans = getLoans(loanIds);
+    }
+
+    
+    function getLoansByStatus(TypesLib.LoanStatus _status) external view returns (TypesLib.Loan[] memory _loans) {
+        uint loansCount = getLoansCountByStatus(_status);
+
+        _loans = new TypesLib.Loan[](loansCount);
+
+        for (uint id = 0; id < loansCount; id++) {
             _loans[id] = getLoanById[id];
         }
     }

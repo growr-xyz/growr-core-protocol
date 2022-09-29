@@ -215,7 +215,7 @@ describe("Project.sol", function () {
 			);
 		});
 
-		describe.only("Positive suites", function () {
+		describe("Positive suites", function () {
 			it("Should create a single loan", async () => {
 				const borrower = borrowerAccount.address;
 				const amount = 500;
